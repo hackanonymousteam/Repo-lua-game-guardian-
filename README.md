@@ -1,8 +1,8 @@
-# 🚀 repo lua game guardian (projects scripts, system , etc
+# 🚀 repo lua game guardian (projects scripts, system , etc)
 
 ## 📱 
 
-- ✔️ files channel telegram batmangamesSS
+- ✔️ files channel telegram @batmangamesSS
 - ✔️ open source
 
 ## 🛠️ 
