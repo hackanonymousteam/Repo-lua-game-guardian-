@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Solstice AI - Intelligent Bots</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background: #181A20;
+            color: #fff;
+            font-family: 'Inter', 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        #loaderOverlay {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #181A20;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.45s;
+        }
+
+        .loader {
+            margin: 0 auto 30px;
+            width: 56px;
+            height: 56px;
+            border: 6px solid #333;
+            border-top: 6px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-sizing: border-box;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-msg {
+            font-size: 1.08rem;
+            margin-bottom: 9px;
+            text-align: center;
+        }
+
+        .loader-dots {
+            font-size: 1.2em;
+            color: #a1a1aa;
+            min-height: 1em;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .app-main {
+            display: none;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #151534 60%, #23234A 100%);
+            padding: 1.1rem 2.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            background: linear-gradient(90deg, #4a90ff 20%, #7c3aed 60%, #ff6b35 90%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 1px 18px #4a90ff66;
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 1rem 1.5rem 1rem;
+        }
+
+        .bots-section {
+            margin: 2em 0;
+        }
+
+        .bots-section h2 {
+            font-size: 1.2em;
+            margin-bottom: 1em;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .bots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 2.2rem;
+        }
+
+        .bot-card {
+            background: #23234a;
+            border-radius: 18px;
+            box-shadow: 0 6px 28px rgba(67, 90, 255, 0.13);
+            padding: 1.45em 2em 1.5em 2em;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1em;
+            min-height: 180px;
+            position: relative;
+            transition: box-shadow .2s;
+        }
+
+        .bot-card:hover {
+            box-shadow: 0 0 0 2px #4a90ff;
+        }
+
+        .bot-top {
+            display: flex;
+            align-items: center;
+            gap: .7em;
+            flex-wrap: wrap;
+        }
+
+        .bot-avatar {
+            font-size: 2em;
+            background: #23234b;
+            border-radius: 50%;
+            padding: .15em .36em;
+        }
+
+        .bot-title {
+            font-weight: 800;
+            font-size: 1.13em;
+            letter-spacing: -.5px;
+        }
+
+        .bot-badge {
+            background: #059669;
+            padding: .13em .7em;
+            border-radius: 10px;
+            font-size: .96em;
+            font-weight: 700;
+            margin-left: .7em;
+            letter-spacing: .5px;
+        }
+
+        .bot-badge.freemium {
+            background: linear-gradient(90deg, #38d996 60%, #059669 100%);
+        }
+
+        .bot-desc {
+            color: #b0b8ff;
+            font-size: 1em;
+        }
+
+        .launch-btn {
+            margin-top: .5em;
+            background: #4a90ff;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: .5em 1.5em;
+            font-size: 1.04em;
+            font-weight: 800;
+            cursor: pointer;
+            align-self: flex-end;
+            transition: background .2s;
+        }
+
+        .launch-btn:active,
+        .launch-btn:focus,
+        .launch-btn:hover {
+            background: #1e5fff;
+        }
+
+        .chat-overlay {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #181a20;
+            z-index: 12000;
+            flex-direction: column;
+        }
+
+        .chat-card {
+            background: #23234a;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            max-width: none;
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+            justify-content: stretch;
+        }
+
+        .chat-title {
+            font-size: 1.35em;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 0.6em;
+            padding: 1.1em 2em 1.1em 1.6em;
+            border-bottom: 1px solid #21213d;
+            background: linear-gradient(90deg, #151534 60%, #23234A 100%);
+        }
+
+        .chat-back {
+            background: none;
+            border: none;
+            color: #4a90ff;
+            font-size: 1.03em;
+            font-weight: 700;
+            cursor: pointer;
+            margin-right: .7em;
+        }
+
+        .chat-messages {
+            flex: 1;
+            max-height: none;
+            min-height: 120px;
+            margin-bottom: 0;
+            padding: 2em 2.5vw .5em 2.5vw;
+            overflow-y: auto;
+            background: transparent;
+            font-size: 1.13em;
+        }
+
+        .chat-msg {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 0.9em;
+        }
+
+        .chat-msg.user .avatar {
+            margin-right: 0.85em;
+        }
+
+        .chat-msg.bot .avatar {
+            margin-right: 0.85em;
+        }
+
+        .chat-msg .avatar {
+            width: 2.1em;
+            height: 2.1em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.31em;
+            background: #181a20;
+        }
+
+        .chat-msg .bubble {
+            background: #25284c;
+            color: #fff;
+            border-radius: 13px;
+            padding: .80em 1.3em;
+            font-size: 1.08em;
+            max-width: 70vw;
+            word-break: break-word;
+        }
+
+        .chat-msg.user .bubble {
+            background: #4a90ff;
+            color: #fff;
+        }
+
+        .chat-footer {
+            display: flex;
+            align-items: center;
+            gap: 0.6em;
+            padding: 1.2em 2.5vw 1.2em 2.5vw;
+            background: #23234a;
+            border-top: 1px solid #23234A;
+        }
+
+        .chat-input {
+            flex: 1 1 auto;
+            border-radius: 9px;
+            border: none;
+            padding: .8em 1em;
+            font-size: 1.13em;
+            background: #13141a;
+            color: #fff;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            outline: 2px solid #4a90ff;
+        }
+
+        .chat-send {
+            background: #4a90ff;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: .8em 1.1em;
+            font-size: 1.09em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .chat-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-clear {
+            background: #ff003c;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: .8em 1.1em;
+            font-size: 1.09em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .chat-clear:active {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                padding: 1.1rem .5rem;
+            }
+            .bots-grid {
+                grid-template-columns: 1fr;
+            }
+            .chat-title {
+                padding: 1em 1vw 1em 1vw;
+            }
+            .chat-footer {
+                padding: 1em 1vw 1em 1vw;
+            }
+            .chat-messages {
+                padding: 1.2em 1vw .8em 1vw;
+            }
+            .chat-card {
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                padding: 0;
+            }
+            .chat-title,
+            .chat-footer {
+                padding-left: 2vw;
+                padding-right: 2vw;
+            }
+            .chat-messages {
+                padding-left: 2vw;
+                padding-right: 2vw;
+            }
+            .chat-card {
+                font-size: .98em;
+            }
+            .chat-msg .bubble {
+                max-width: 93vw;
+            }
+            .bots-section {
+                margin: 1em 0;
+            }
+            .bot-card {
+                padding: 1em 1em 1em 1em;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .chat-input {
+                font-size: .97em;
+            }
+            .chat-card {
+                font-size: .95em;
+            }
+            .chat-title {
+                font-size: 1em;
+            }
+            .bot-card {
+                padding: .7em .7em .7em .7em;
+            }
+            .bot-avatar {
+                font-size: 1.6em;
+            }
+            .bot-title {
+                font-size: 1em;
+            }
+            .bot-desc {
+                font-size: .94em;
+            }
+            .launch-btn {
+                padding: .4em .9em;
+                font-size: .97em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .chat-title {
+                font-size: .9em;
+            }
+            .chat-msg .bubble {
+                font-size: .97em;
+            }
+            .chat-footer {
+                gap: 0.3em;
+            }
+            .chat-send,
+            .chat-clear {
+                font-size: .98em;
+                padding: .6em .8em;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .chat-card {
+                height: 100dvh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loaderOverlay">
+        <div class="loader"></div>
+        <div class="loader-msg">Bots are loading, please wait...</div>
+        <div class="loader-dots" id="dots"></div>
+    </div>
+
+    <div id="solsticeApp" class="app-main">
+        <div class="header">
+            <div class="logo">
+                🌟 Solstice AI
+            </div>
+        </div>
+
+        <div id="botsGridPage">
+            <div class="container">
+                <div class="bots-section">
+                    <h2>🤖 Coding Bots</h2>
+                    <div class="bots-grid" id="codingBots"></div>
+                </div>
+
+                <div class="bots-section">
+                    <h2>💬 Chat Bots</h2>
+                    <div class="bots-grid" id="chatBots"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatOverlay" class="chat-overlay">
+            <div class="chat-card">
+                <div class="chat-title">
+                    <button class="chat-back" onclick="closeChatOverlay()">← Back</button>
+                    <span id="chatOverlayAvatar"></span>
+                    <span id="chatOverlayTitle"></span>
+                </div>
+                <div class="chat-messages" id="chatMsgs"></div>
+                <div class="chat-footer">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type your message..." autocomplete="off">
+                    <button id="chatSendBtn" class="chat-send" onclick="sendMsg(event)">Send</button>
+                    <button class="chat-clear" onclick="clearChat()">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+  const API_KEY = "YOUR_API_HUGGING_FACES"; 
+
+        const MODELS = [
+            "deepseek-ai/DeepSeek-R1",
+            "Qwen/Qwen2.5-7B-Instruct",
+            "Qwen/Qwen2.5-Coder-32B-Instruct",
+            "google/gemma-2-2b-it",
+            "zai-org/GLM-4.5"
+        ];
+
+        const CODE_MODELS = MODELS;
+        const CHAT_MODELS = MODELS;
+
+        const BOTS = {
+            coding: [
+                { name: "Code Python", avatar: "🐍", desc: "Python expert help with coding, debugging, and best practices", type: "freemium", models: CODE_MODELS },
+                { name: "Code JS", avatar: "🟨", desc: "JavaScript/TypeScript specialist for modern web development", type: "freemium", models: CODE_MODELS },
+                { name: "Code Debug", avatar: "🛠️", desc: "Find and fix bugs with advanced debugging assistance", type: "freemium", models: CODE_MODELS },
+                { name: "Code Refactor", avatar: "✨", desc: "Improve code quality, performance, and readability", type: "freemium", models: CODE_MODELS },
+                { name: "Code Explainer", avatar: "📘", desc: "Explain complex code concepts in simple terms", type: "freemium", models: CODE_MODELS },
+                { name: "Code Algorithm", avatar: "⚙️", desc: "Algorithm design and optimization support", type: "freemium", models: CODE_MODELS }
+            ],
+            chat: [
+                { name: "Chat General", avatar: "🧠", desc: "Friendly general conversation on any topic", type: "freemium", models: CHAT_MODELS },
+                { name: "Chat Facts", avatar: "📚", desc: "Amazing facts and knowledge about the world", type: "freemium", models: CHAT_MODELS },
+                { name: "Chat Motivator", avatar: "💪", desc: "Daily motivation and inspiration", type: "freemium", models: CHAT_MODELS },
+                { name: "Chat Wellness", avatar: "🌱", desc: "Wellness advice, mindfulness, and self-care tips", type: "freemium", models: CHAT_MODELS },
+                { name: "Chat Jokes", avatar: "😂", desc: "Funny jokes and entertaining conversations", type: "freemium", models: CHAT_MODELS },
+                { name: "Chat Planner", avatar: "📅", desc: "Productivity tips and planning assistance", type: "freemium", models: CHAT_MODELS }
+            ]
+        };
+
+        const API_URL = "https://router.huggingface.co/v1/chat/completions";
+
+        const dots = document.getElementById('dots');
+        let dotCount = 0;
+        const dotIntv = setInterval(() => {
+            dotCount = (dotCount + 1) % 4;
+            if (dots) dots.textContent = '.'.repeat(dotCount);
+        }, 400);
+
+        // Aguardar o carregamento completo da página
+        window.addEventListener('DOMContentLoaded', function() {
+            // Simular carregamento de dados
+            setTimeout(function() {
+                const loaderOverlay = document.getElementById('loaderOverlay');
+                const solsticeApp = document.getElementById('solsticeApp');
+                
+                if (loaderOverlay) {
+                    loaderOverlay.style.opacity = '0';
+                    setTimeout(function() {
+                        loaderOverlay.style.display = 'none';
+                        if (solsticeApp) {
+                            solsticeApp.style.display = 'block';
+                        }
+                        clearInterval(dotIntv);
+                        updateUI();
+                        route(location.pathname);
+                    }, 450);
+                } else {
+                    if (solsticeApp) solsticeApp.style.display = 'block';
+                    clearInterval(dotIntv);
+                    updateUI();
+                    route(location.pathname);
+                }
+            }, 1100);
+        });
+
+        window.onpopstate = function() {
+            route(location.pathname);
+        };
+
+        function route(path) {
+            const botsGridPage = document.getElementById("botsGridPage");
+            const chatOverlay = document.getElementById("chatOverlay");
+            
+            if (path && path.endsWith("/chat")) {
+                if (botsGridPage) botsGridPage.style.display = "none";
+                if (chatOverlay) chatOverlay.style.display = "flex";
+            } else {
+                if (botsGridPage) botsGridPage.style.display = "block";
+                if (chatOverlay) chatOverlay.style.display = "none";
+            }
+        }
+
+        function renderBots(section, botlist) {
+            const container = document.getElementById(section + "Bots");
+            if (!container) return;
+            
+            container.innerHTML = botlist.map((bot, i) => {
+                let badge = `bot-badge ${bot.type}`;
+                return `<div class="bot-card"> 
+                            <div class="bot-top"> 
+                                <span class="bot-avatar">${bot.avatar}</span> 
+                                <span class="bot-title">${escapeHtml(bot.name)}</span> 
+                                <span class="${badge}">${bot.type.toUpperCase()}</span> 
+                            </div> 
+                            <div class="bot-desc">${escapeHtml(bot.desc)}</div> 
+                            <button class="launch-btn" onclick="launchBot('${section}',${i});event.stopPropagation();">Launch</button>
+                        </div>`;
+            }).join('');
+        }
+
+        function updateUI() {
+            renderBots("coding", BOTS.coding);
+            renderBots("chat", BOTS.chat);
+        }
+
+        let curBot = null, curBotType = null, curBotIdx = null;
+
+        function launchBot(section, idx) {
+            curBotType = section;
+            curBotIdx = idx;
+            curBot = BOTS[section][idx];
+            
+            const avatarSpan = document.getElementById("chatOverlayAvatar");
+            const titleSpan = document.getElementById("chatOverlayTitle");
+            
+            if (avatarSpan) avatarSpan.textContent = curBot.avatar || "🤖";
+            if (titleSpan) titleSpan.textContent = curBot.name;
+            
+            renderChatUI();
+            history.pushState({}, "", "/chat");
+            route("/chat");
+        }
+
+        function closeChatOverlay() {
+            history.pushState({}, "", "/");
+            route("/");
+        }
+
+        function escapeHtml(s) {
+            if (!s) return "";
+            return s.replace(/[<>"'&]/g, m => ({
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+                "&": "&amp;"
+            })[m]);
+        }
+
+        function renderChatUI() {
+            const chatMsgs = document.getElementById("chatMsgs");
+            if (!chatMsgs || !curBot) return;
+            
+            chatMsgs.innerHTML = `<div class="chat-msg bot">
+                                    <span class="avatar">${curBot.avatar || "🤖"}</span>
+                                    <span class="bubble">Hi! I am ${escapeHtml(curBot.name)}, here to help. Ask me anything!</span>
+                                  </div>`;
+            
+            const chatInput = document.getElementById("chatInput");
+            const chatSendBtn = document.getElementById("chatSendBtn");
+            
+            if (chatInput) {
+                chatInput.placeholder = `Ask ${curBot.name}...`;
+                chatInput.disabled = false;
+            }
+            if (chatSendBtn) chatSendBtn.disabled = false;
+        }
+
+        function clearChat() {
+            if (curBot) renderChatUI();
+        }
+
+        async function tryModels(models, prompt) {
+            if (!API_KEY || API_KEY.trim() === "") {
+                return "[Error: API Key not configured. Please add your Hugging Face API key to the code.]";
+            }
+            
+            for (let i = 0; i < models.length; i++) {
+                let model = models[i];
+                try {
+                    let controller = new AbortController();
+                    let timeoutId = setTimeout(() => controller.abort(), 30000);
+                    
+                    let resp = await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer " + API_KEY,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: "system", content: `You are ${curBot.name}, a helpful AI assistant. Be friendly, concise, and helpful.` },
+                                { role: "user", content: prompt }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 500
+                        }),
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!resp.ok) {
+                        console.warn(`Model ${model} failed with status: ${resp.status}`);
+                        continue;
+                    }
+                    
+                    let data = await resp.json();
+                    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                        return data.choices[0].message.content.trim();
+                    }
+                } catch(e) {
+                    console.warn(`Error with model ${model}:`, e.message);
+                    continue;
+                }
+            }
+            return "[Sorry, I'm having trouble connecting. Please check your API key and try again.]";
+        }
+
+        async function sendMsg(e) {
+            if (e) e.preventDefault();
+            
+            const input = document.getElementById("chatInput");
+            const sendBtn = document.getElementById("chatSendBtn");
+            const chatMsgs = document.getElementById("chatMsgs");
+            
+            if (!input || !sendBtn || !chatMsgs) return false;
+            
+            let msg = input.value.trim();
+            if (!msg) return false;
+            
+            // Disable input while processing
+            input.disabled = true;
+            sendBtn.disabled = true;
+            
+            // Add user message
+            chatMsgs.innerHTML += `<div class="chat-msg user">
+                                        <span class="avatar">🧑</span>
+                                        <span class="bubble">${escapeHtml(msg)}</span>
+                                   </div>`;
+            
+            // Add typing indicator
+            chatMsgs.innerHTML += `<div class="chat-msg bot" id="aiTyping">
+                                        <span class="avatar">${curBot ? (curBot.avatar || "🤖") : "🤖"}</span>
+                                        <span class="bubble"><i>${curBot ? curBot.name : "Bot"} is thinking...</i></span>
+                                   </div>`;
+            
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+            input.value = "";
+            
+            // Get response
+            let reply = await tryModels(curBot ? curBot.models : MODELS, msg);
+            
+            // Remove typing indicator
+            const typing = document.getElementById("aiTyping");
+            if (typing) {
+                typing.outerHTML = `<div class="chat-msg bot">
+                                        <span class="avatar">${curBot ? (curBot.avatar || "🤖") : "🤖"}</span>
+                                        <span class="bubble">${escapeHtml(reply)}</span>
+                                    </div>`;
+            }
+            
+            // Re-enable input
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+            
+            return false;
+        }
+        
+        // Adicionar evento de Enter no input
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMsg(e);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

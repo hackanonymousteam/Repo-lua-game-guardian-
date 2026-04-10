@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ChatGPT Clone — Ahamai API (Light)</title>
+
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #ffffff;
+    --surface: #fbfbfd;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --text: #0f1724;
+    --primary: #3f51b5;
+    --elev: rgba(16,24,40,0.06);
+    --radius: 14px;
+    --shadow: 0 6px 18px rgba(31,41,55,0.06);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,Roboto,system-ui,-apple-system,"Segoe UI",Arial;color:var(--text);background:linear-gradient(180deg,var(--bg),#f7f9fc)}
+  header.appbar{
+    height:64px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 16px; background:var(--surface); box-shadow:var(--shadow); position:sticky; top:0; z-index:20;
+    border-bottom:1px solid rgba(15,23,36,0.04);
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44;border-radius:10px;background:linear-gradient(135deg,var(--primary),#7aa2f7);display:grid;place-items:center;color:white;font-weight:700}
+  .title{font-weight:600;font-size:16px}
+  .subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .container{max-width:960px;margin:16px auto; padding:0 12px; display:flex; gap:16px; align-items:stretch;}
+  /* Left: panel, Right: chat */
+  .panel{width:320px; min-width:260px; background:var(--card); border-radius:12px; padding:12px; box-shadow:var(--shadow); border:1px solid rgba(15,23,36,0.03)}
+  .panel h4{margin:6px 0 10px 0;font-size:13px}
+  .control{display:flex;flex-direction:column;gap:8px}
+  label.small{font-size:12px;color:var(--muted);margin-bottom:6px}
+
+  /* Model select improved */
+  .model-wrap{display:flex;flex-direction:column;gap:8px}
+  .model-search{display:flex;gap:8px;align-items:center}
+  .model-input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(15,23,36,0.06);background:#fff;outline:none;font-size:14px}
+  .model-list{max-height:220px;overflow:auto;border-radius:10px;border:1px solid rgba(15,23,36,0.04);padding:6px;background:#fbfdff}
+  .model-item{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text)}
+  .model-item:hover{background:#f3f6ff}
+  .model-item.active{background:linear-gradient(90deg,#eef2ff,#f8fbff);border-left:3px solid var(--primary);padding-left:8px}
+
+  .muted{color:var(--muted);font-size:13px}
+
+  /* Chat area */
+  .chat-area{flex:1; display:flex; flex-direction:column; gap:10px}
+  .chat-card{flex:1; background:transparent; display:flex; flex-direction:column; border-radius:12px; overflow:hidden}
+  .messages{flex:1; padding:18px; display:flex; flex-direction:column; gap:12px; overflow:auto; min-height:300px}
+  .bubble{max-width:78%; padding:12px 14px;border-radius:12px;box-shadow:0 3px 10px rgba(2,6,23,0.03);font-size:15px;line-height:1.5}
+  .msg-row{display:flex; gap:10px; align-items:flex-end}
+  .user-row{justify-content:flex-end}
+  .user .bubble{background:linear-gradient(180deg,var(--primary),#3553b6); color: #fff; border-bottom-right-radius:6px}
+  .bot .bubble{background:var(--card); color:var(--text); border-bottom-left-radius:6px}
+  .role-icon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:18px;color:var(--primary);background:linear-gradient(180deg,#fff,#f7f9ff);border:1px solid rgba(15,23,36,0.03)}
+
+  /* Composer */
+  .composer{padding:12px;background:var(--card); border-radius:12px; display:flex; gap:10px; align-items:center; box-shadow:var(--shadow); border:1px solid rgba(15,23,36,0.03)}
+  .input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(15,23,36,0.06);font-size:15px;outline:none}
+  .btn{background:var(--primary); color:white;border:none;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(63,81,181,0.12)}
+  .btn.ghost{background:transparent;color:var(--primary);border:1px solid rgba(63,81,181,0.12);box-shadow:none}
+  .small{font-size:13px;padding:8px 10px}
+
+  .meta{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px}
+  .tiny{font-size:12px;color:var(--muted)}
+
+  /* responsive */
+  @media (max-width:880px){
+    .container{flex-direction:column;padding:12px}
+    .panel{width:100%}
+  }
+
+  /* typewriter caret */
+  .caret{display:inline-block;width:2px;background:var(--text);margin-left:2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* loader */
+  .dots{display:inline-block;letter-spacing:6px}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:6px;opacity:0.3;animation:dot 1s infinite}
+  .dot:nth-child(2){animation-delay:0.15s}
+  .dot:nth-child(3){animation-delay:0.3s}
+  @keyframes dot{0%{opacity:0.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}100%{opacity:0.2;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="appbar" role="banner">
+  <div class="brand">
+    <div class="logo">AI</div>
+    <div>
+      <div class="title">ChatGPT-Clone</div>
+      <div class="subtitle">Ahamai API • Light UI</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:center">
+    <div class="tiny muted">Fast mode: <strong style="color:var(--primary)">gpt-5-nano-2025-08-07</strong></div>
+    <button id="clearBtn" class="btn ghost small" title="Clear chat">Clear</button>
+  </div>
+</header>
+
+<div class="container" role="main">
+
+  <!-- Left panel -->
+  <aside class="panel" aria-label="controls">
+    <h4>Model & Settings</h4>
+
+    <div class="control">
+
+      <div class="model-wrap">
+        <label class="small">Search models</label>
+        <div class="model-search">
+          <input id="modelSearch" class="model-input" placeholder="Search models..." aria-label="Search models">
+          <button id="refreshModels" class="btn ghost small" title="Refresh models" aria-label="Refresh models">
+            <span class="material-icons">refresh</span>
+          </button>
+        </div>
+
+        <div id="modelList" class="model-list" role="listbox" tabindex="0" aria-label="Model list">
+          <!-- items injected -->
+          <div class="tiny muted" id="modelLoading">Loading models…</div>
+        </div>
+
+        <div class="meta">
+          <div class="tiny muted">Selected: <span id="selectedModel" style="color:var(--text);font-weight:600">—</span></div>
+          <div class="tiny muted">Temp:
+            <input id="temp" type="range" min="0" max="1.2" step="0.1" value="0.7" style="vertical-align:middle">
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px">
+        <label class="small">System prompt (optional)</label>
+        <input id="systemPrompt" class="model-input" placeholder="You are a helpful assistant." />
+      </div>
+
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button id="exportBtn" class="btn small">Export</button>
+        <button id="importBtn" class="btn ghost small">Import</button>
+      </div>
+
+      <div class="tiny muted" style="margin-top:12px">API: <strong>https://ahamai-api.officialprakashkrsingh.workers.dev/v1</strong></div>
+    </div>
+  </aside>
+
+  <!-- Right chat -->
+  <section class="chat-area" aria-label="chat area">
+    <div class="chat-card">
+      <div id="messages" class="messages" aria-live="polite"></div>
+
+      <div style="padding:12px">
+        <div class="composer" role="form" aria-label="message composer">
+          <input id="input" class="input" placeholder="Type a message and press Send (or Enter)" aria-label="message input" autocomplete="off"/>
+          <button id="send" class="btn" title="Send message" aria-label="Send">
+            <span class="material-icons">send</span>
+          </button>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px">
+          <div class="tiny muted">Responses via selected model</div>
+          <div class="tiny muted">Status: <span id="status">idle</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================
+   Config (from user)
+   ========================= */
+const API_BASE = "https://ahamai-api.officialprakashkrsingh.workers.dev/v1";
+const API_KEY  = "ahamaibyprakash25";
+
+/* =========================
+   State & DOM refs
+   ========================= */
+const modelListEl = document.getElementById('modelList');
+const modelSearch = document.getElementById('modelSearch');
+const modelLoading = document.getElementById('modelLoading');
+const selectedModelLabel = document.getElementById('selectedModel');
+const tempSlider = document.getElementById('temp');
+const systemPromptInput = document.getElementById('systemPrompt');
+
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+const statusEl = document.getElementById('status');
+const clearBtn = document.getElementById('clearBtn');
+const refreshBtn = document.getElementById('refreshModels');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+
+let MODELS = [];           // fetched models array of {id,...}
+let SELECTED = null;
+let isSending = false;
+let lastAssistantNode = null;
+
+/* =========================
+   Helpers
+   ========================= */
+function setStatus(s){
+  statusEl.textContent = s;
+}
+function el(tag, cls='', txt=''){ const d = document.createElement(tag); if(cls) d.className = cls; if(txt) d.textContent = txt; return d; }
+function timeNow(){ return new Date().toLocaleTimeString(); }
+
+/* =========================
+   Render model list
+   ========================= */
+function renderModels(filter=''){
+  modelListEl.innerHTML = '';
+  const list = MODELS.filter(m => m.id.toLowerCase().includes(filter.toLowerCase()));
+  if(list.length === 0){
+    modelListEl.appendChild(el('div','tiny muted','No models found'));
+    return;
+  }
+  for(const m of list){
+    const item = el('div','model-item', m.id);
+    item.tabIndex = 0;
+    if(SELECTED === m.id) item.classList.add('active');
+    item.onclick = () => { SELECTED = m.id; selectedModelLabel.textContent = SELECTED; renderModels(modelSearch.value); }
+    item.onkeydown = (e) => { if(e.key === 'Enter') item.click(); }
+    modelListEl.appendChild(item);
+  }
+}
+
+/* =========================
+   Fetch models from API
+   ========================= */
+async function loadModels(){
+  try{
+    modelLoading.style.display = 'block';
+    setStatus('loading models...');
+    const res = await fetch(`${API_BASE}/models`, {
+      headers: { 'Authorization': `Bearer ${API_KEY}` }
+    });
+    if(!res.ok) throw new Error('Models fetch failed: ' + res.status);
+    const data = await res.json();
+    MODELS = Array.isArray(data.data) ? data.data : (data.models || []);
+    // default prefer fast names if present
+    const prefer = ['gpt-5-nano-2025-08-07','gpt-5-mini'];
+    const foundPrefer = MODELS.find(m => prefer.includes(m.id))?.id;
+    SELECTED = SELECTED || foundPrefer || MODELS[0]?.id || null;
+    selectedModelLabel.textContent = SELECTED || '—';
+    modelLoading.style.display = 'none';
+    renderModels();
+    setStatus('ready');
+  }catch(err){
+    console.error(err);
+    modelListEl.innerHTML = '<div class="tiny muted">Failed to load models — check API</div>';
+    modelLoading.style.display = 'none';
+    setStatus('error');
+  }
+}
+
+/* =========================
+   Chat UI helpers
+   ========================= */
+function addUserMessage(text){
+  const row = el('div','msg-row user-row');
+  const bubble = el('div','bubble');
+  bubble.textContent = text;
+  const icon = el('div','role-icon'); icon.textContent = '👤';
+  const wrapper = el('div','user'); wrapper.appendChild(bubble);
+  row.appendChild(wrapper);
+  // append with icon on right
+  row.appendChild(icon);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function addAssistantPlaceholder(){
+  // create and return node for streaming update
+  const row = el('div','msg-row');
+  const icon = el('div','role-icon'); icon.textContent = '🤖';
+  const wrapper = el('div','bot');
+  const bubble = el('div','bubble'); bubble.textContent = ''; // will be typed
+  wrapper.appendChild(bubble);
+  row.appendChild(icon);
+  row.appendChild(wrapper);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  lastAssistantNode = bubble;
+  return bubble;
+}
+
+/* Typewriter: fast but smooth */
+function typeWriter(text, node, speed=6){
+  node.textContent = '';
+  let i=0;
+  const caret = el('span','caret');
+  node.appendChild(caret);
+  function step(){
+    if(i >= text.length){
+      caret.remove();
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return;
+    }
+    // append next chunk for efficiency (not char-by-char for large text)
+    const chunkSize = 1; // keep small for natural feel; speed controls timing
+    node.textContent += text.substr(i, chunkSize);
+    i += chunkSize;
+    node.appendChild(caret);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    // small timeout
+    setTimeout(step, speed);
+  }
+  step();
+}
+
+/* =========================
+   Send message (non-streaming but fast) with error handling
+   ========================= */
+async function sendMessage(){
+  if(isSending) return;
+  const text = inputEl.value.trim();
+  if(!text) return;
+  if(!SELECTED){ alert('Select a model first'); return; }
+
+  inputEl.value = '';
+  addUserMessage(text);
+  const assistantNode = addAssistantPlaceholder();
+  setStatus('sending…');
+  isSending = true;
+  sendBtn.disabled = true;
+
+  const payload = {
+    model: SELECTED,
+    messages: [
+      ...(systemPromptInput.value ? [{role:'system', content: systemPromptInput.value}] : []),
+      { role: 'user', content: text }
+    ],
+    temperature: parseFloat(tempSlider.value) || 0.7,
+    stream: false
+  };
+
+  try{
+    const res = await fetch(`${API_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const txt = await res.text();
+      throw new Error('API error: ' + res.status + ' — ' + txt);
+    }
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? 'No response';
+    // show typing effect fast
+    typeWriter(String(reply), assistantNode, 6);
+    setStatus('done • ' + timeNow());
+  }catch(err){
+    console.error(err);
+    assistantNode.textContent = '⚠️ Error: ' + (err.message || err);
+    setStatus('error');
+  }finally{
+    isSending = false;
+    sendBtn.disabled = false;
+  }
+}
+
+/* =========================
+   Small utilities
+   ========================= */
+inputEl.addEventListener('keypress', function(e){
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+sendBtn.addEventListener('click', sendMessage);
+clearBtn.addEventListener('click', ()=>{ if(confirm('Clear chat?')) { messagesEl.innerHTML=''; setStatus('idle'); }});
+refreshBtn.addEventListener('click', ()=>{ loadModels(); setStatus('refreshing models'); });
+modelSearch.addEventListener('input', ()=> renderModels(modelSearch.value));
+exportBtn.addEventListener('click', ()=> {
+  const texts = Array.from(messagesEl.querySelectorAll('.bubble')).map(b => b.textContent);
+  const blob = new Blob([JSON.stringify(texts,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat_export.json'; a.click();
+  setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
+});
+importBtn.addEventListener('click', async ()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
+  input.onchange = async ()=> {
+    const file = input.files[0]; if(!file) return;
+    const txt = await file.text();
+    try{
+      const arr = JSON.parse(txt);
+      if(Array.isArray(arr)){
+        messagesEl.innerHTML = ''; arr.forEach(t => {
+          const node = addAssistantPlaceholder(); node.textContent = t;
+        });
+      } else alert('Invalid file format');
+    }catch(e){ alert('Invalid file'); }
+  };
+  input.click();
+});
+
+/* =========================
+   Boot
+   ========================= */
+(async function boot(){
+  setStatus('starting');
+  await loadModels();
+  // keyboard focus
+  inputEl.focus();
+  setStatus('idle');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>IPTV Link Extractor & Tester</title>
+<style>
+body {
+    background: #111;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+}
+h2, h3 { 
+    color: #0f0;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.stats {
+    background: #222;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.stat {
+    display: inline-block;
+    margin: 0 15px;
+    font-weight: bold;
+}
+.working {
+    color: #0f0;
+    margin: 8px 0;
+    padding: 8px;
+    background: rgba(0, 255, 0, 0.1);
+    border-left: 3px solid #0f0;
+    border-radius: 3px;
+}
+.fail {
+    color: #f33;
+    margin: 8px 0;
+    padding: 8px;
+    background: rgba(255, 51, 51, 0.1);
+    border-left: 3px solid #f33;
+    border-radius: 3px;
+}
+.testing {
+    color: #09f;
+    margin: 8px 0;
+    padding: 8px;
+    background: rgba(9, 144, 255, 0.1);
+    border-left: 3px solid #09f;
+    border-radius: 3px;
+}
+.link-text {
+    word-break: break-all;
+    font-size: 12px;
+}
+.controls {
+    text-align: center;
+    margin: 20px 0;
+}
+button {
+    background: #09f;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+button:hover {
+    background: #07d;
+}
+button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+button.secondary {
+    background: #666;
+}
+button.secondary:hover {
+    background: #555;
+}
+button.success {
+    background: #0a0;
+}
+button.success:hover {
+    background: #080;
+}
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #333;
+    border-radius: 5px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+.progress {
+    height: 100%;
+    background: #0f0;
+    width: 0%;
+    transition: width 0.3s;
+}
+.text-area-container {
+    margin: 20px 0;
+    padding: 15px;
+    background: #222;
+    border-radius: 5px;
+}
+textarea {
+    width: 100%;
+    height: 200px;
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+.input-controls {
+    text-align: center;
+    margin-top: 15px;
+}
+.panel {
+    background: #1a1a1a;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+.channel-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    padding: 8px;
+    background: #252525;
+    border-radius: 3px;
+}
+.channel-logo {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    object-fit: contain;
+}
+.channel-info {
+    flex-grow: 1;
+}
+.channel-status {
+    font-size: 12px;
+    margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+.status-working {
+    background: rgba(0, 255, 0, 0.2);
+    color: #0f0;
+}
+.status-failed {
+    background: rgba(255, 51, 51, 0.2);
+    color: #f33;
+}
+.status-pending {
+    background: rgba(9, 144, 255, 0.2);
+    color: #09f;
+}
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #444;
+    margin-bottom: 20px;
+}
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #222;
+    border: 1px solid transparent;
+    border-bottom: none;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+}
+.tab.active {
+    background: #09f;
+    color: white;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.output-area {
+    width: 100%;
+    height: 400px;
+    background: #222;
+    color: #0f0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    resize: vertical;
+    line-height: 1.4;
+}
+.result-panel {
+    background: #1a1a1a;
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 20px;
+}
+.copy-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #0f0;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 1000;
+    animation: fadeOut 3s forwards;
+    display: none;
+}
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+.filter-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+.filter-btn {
+    background: #333;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+.filter-btn.active {
+    background: #09f;
+}
+.info-badge {
+    display: inline-block;
+    background: #333;
+    color: #aaa;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 10px;
+}
+.duplicate-item {
+    opacity: 0.7;
+    background: rgba(255, 255, 0, 0.05);
+}
+.duplicate-item::before {
+    content: "🔄 ";
+    color: #ff0;
+    font-size: 10px;
+}
+.quick-copy-section {
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid #0a0;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+.quick-copy-section h4 {
+    color: #0f0;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.quick-copy-section h4 span {
+    font-size: 12px;
+    color: #aaa;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔍 IPTV Link Extractor & Tester</h2>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('input')">Input Data</div>
+        <div class="tab" onclick="showTab('test')">Link Testing</div>
+        <div class="tab" onclick="showTab('results')">Formatted Results</div>
+    </div>
+    
+    <div id="input" class="tab-content active">
+        <div class="panel">
+            <h3>Paste M3U8 content or link list</h3>
+            <div class="text-area-container">
+                <textarea id="inputText" placeholder="Paste M3U8 content or links list:
+
+#EXTINF:-1 tvg-logo='https://imgur.com/vH2tkQt.png' group-title='Movie Channels',TNT Séries HD
+https://brflu.walk-tv.com/5904/tracks-v1a1/mono.m3u8
+
+#EXTINF:-1 tvg-logo='https://imgur.com/wMstLkc.png' group-title='ADDITIONAL',SONY CLASSICS
+https://spt-sonyoneclassicas-1-br.samsung.wurl.tv/playlist.m3u8
+
+Or just a link list:
+https://example.com/video.m3u8
+https://example2.com/stream.m3u8"></textarea>
+                
+                <div class="input-controls">
+                    <button onclick="processText()">📥 Process Text</button>
+                    <button onclick="loadExample()">📋 Load Example</button>
+                    <button onclick="clearText()">🗑️ Clear</button>
+                    <button onclick="removeDuplicates()" class="secondary" title="Remove duplicate URLs before processing">🔗 Remove Duplicates</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; color: #aaa; font-size: 12px;">
+                    System will automatically extract and remove duplicates:
+                    <br>• Video links (.m3u8, .mp4, .ts, etc.)
+                    <br>• Image links (.png, .jpg, .jpeg, .gif)
+                    <br>• Channel info (#EXTINF)
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>Extracted Channels <span id="extractedCount" style="color: #09f; font-size: 14px;"></span></h3>
+            <div id="channelsList"></div>
+        </div>
+    </div>
+    
+    <div id="test" class="tab-content">
+        <div class="quick-copy-section" id="quickCopySection" style="display: none;">
+            <h4>
+                <span>📋 Copy Working Links</span>
+                <span id="workingCountCopy">0 working</span>
+            </h4>
+            <div class="controls">
+                <button onclick="copyWorkingLinks()" class="success" id="copyWorkingBtn">📋 Copy Working Links</button>
+                <button onclick="copyWorkingPlaylist()" class="success" id="copyPlaylistBtn">📺 Copy Working Playlist</button>
+                <button onclick="copyWorkingUrlsOnly()" class="secondary">🔗 Copy URLs Only</button>
+            </div>
+            <div style="font-size: 11px; color: #aaa; margin-top: 10px; text-align: center;">
+                Can copy during tests! Updates automatically.
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">Total: <span id="total">0</span></div>
+            <div class="stat">Working: <span id="working">0</span></div>
+            <div class="stat">Failed: <span id="failed">0</span></div>
+            <div class="stat">Tested: <span id="tested">0</span></div>
+            <div class="stat">Unique: <span id="unique">0</span></div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startTests()" id="startBtn">▶ Start Tests</button>
+            <button onclick="stopTests()" id="stopBtn" disabled>⏹ Stop</button>
+            <button onclick="clearResults()" id="clearBtn">🗑️ Clear Results</button>
+            <button onclick="showTab('results')" id="resultsBtn" disabled>📋 View Results</button>
+            <button onclick="copyWorkingLinks()" class="success" id="copyWorkingBtnMain" style="display: none;">📋 Copy Working</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+    
+    <div id="results" class="tab-content">
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">Formatted Playlist</h3>
+                <div>
+                    <button onclick="copyResults()" id="copyResultsBtn">📋 Copy Playlist</button>
+                    <button onclick="filterResults('all')" class="filter-btn active" id="filterAll">All</button>
+                    <button onclick="filterResults('working')" class="filter-btn" id="filterWorking">Working</button>
+                    <button onclick="filterResults('failed')" class="filter-btn" id="filterFailed">Failed</button>
+                </div>
+            </div>
+            
+            <div class="output-area" id="outputArea">
+                Results will appear here after testing...
+            </div>
+            
+            <div style="margin-top: 15px; color: #aaa; font-size: 12px; text-align: center;">
+                Total channels: <span id="totalResults">0</span> | 
+                Working: <span id="workingResults">0</span> | 
+                Failed: <span id="failedResults">0</span> |
+                Unique: <span id="uniqueResults">0</span>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>Test Logs</h3>
+            <div id="testLogs" style="height: 200px; overflow-y: auto; background: #222; padding: 10px; border-radius: 5px; font-size: 12px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="copy-notification" id="copyNotification">✅ Copied to clipboard!</div>
+
+<script>
+let state = {
+    running: false,
+    stopped: false,
+    working: 0,
+    failed: 0,
+    tested: 0,
+    unique: 0
+};
+
+let channels = [];
+let linksToTest = [];
+let urlMap = new Map();
+let currentFilter = 'all';
+
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    document.getElementById(tabName).classList.add('active');
+    document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+    
+    if (tabName === 'results') {
+        generateFormattedResults();
+    }
+}
+
+function normalizeURL(url) {
+    if (!url) return '';
+    
+    let normalized = url.toLowerCase().trim();
+    normalized = normalized.replace(/\/+$/, '');
+    normalized = normalized.replace(/\?.*$/, '');
+    normalized = normalized.replace(/[?&](token|auth|key|secret|id|user)=[^&]*/g, '');
+    
+    return normalized;
+}
+
+function processText() {
+    const text = document.getElementById('inputText').value.trim();
+    if (!text) {
+        alert('Please paste some content first!');
+        return;
+    }
+    
+    channels = [];
+    linksToTest = [];
+    urlMap.clear();
+    
+    const lines = text.split('\n');
+    let currentChannel = null;
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('#EXTINF:')) {
+            currentChannel = {
+                rawLine: line,
+                name: '',
+                logo: '',
+                group: 'GENERAL',
+                url: '',
+                status: 'pending',
+                tested: false,
+                isImage: false,
+                originalIndex: i,
+                isDuplicate: false,
+                duplicateOf: null
+            };
+            
+            const parts = line.split(',');
+            if (parts.length > 1) {
+                currentChannel.name = parts[parts.length - 1].trim();
+            }
+            
+            const logoMatch = line.match(/tvg-logo\s*=\s*["']([^"']+)["']/i);
+            if (logoMatch) {
+                currentChannel.logo = logoMatch[1];
+            }
+            
+            const groupMatch = line.match(/group-title\s*=\s*["']([^"']+)["']/i);
+            if (groupMatch) {
+                currentChannel.group = groupMatch[1];
+            }
+            
+            if (i + 1 < lines.length) {
+                const nextLine = lines[i + 1].trim();
+                if (nextLine.startsWith('http')) {
+                    currentChannel.url = nextLine;
+                    
+                    const normalizedUrl = normalizeURL(nextLine);
+                    
+                    if (urlMap.has(normalizedUrl)) {
+                        currentChannel.isDuplicate = true;
+                        currentChannel.duplicateOf = urlMap.get(normalizedUrl)[0].originalIndex;
+                        urlMap.get(normalizedUrl).push(currentChannel);
+                        addLog(`⚠️ Duplicate URL found: ${currentChannel.name}`);
+                    } else {
+                        urlMap.set(normalizedUrl, [currentChannel]);
+                        channels.push(currentChannel);
+                        linksToTest.push(nextLine);
+                    }
+                    
+                    i++;
+                }
+            }
+        } 
+        else if (line.startsWith('http')) {
+            const url = line;
+            const normalizedUrl = normalizeURL(url);
+            const isImage = /\.(png|jpg|jpeg|gif|webp|bmp|svg)(\?.*)?$/i.test(url);
+            
+            const channel = {
+                rawLine: '',
+                name: `Link ${channels.length + 1}`,
+                logo: '',
+                group: 'DIRECT LINKS',
+                url: isImage ? '' : url,
+                status: 'pending',
+                tested: false,
+                isImage: isImage,
+                originalIndex: i,
+                isDuplicate: false,
+                duplicateOf: null
+            };
+            
+            if (isImage) {
+                channel.logo = url;
+                channel.name = `Image ${channels.filter(c => c.isImage).length + 1}`;
+                channel.group = 'IMAGES';
+            }
+            
+            if (!isImage && urlMap.has(normalizedUrl)) {
+                channel.isDuplicate = true;
+                channel.duplicateOf = urlMap.get(normalizedUrl)[0].originalIndex;
+                urlMap.get(normalizedUrl).push(channel);
+                addLog(`⚠️ Duplicate URL found: ${channel.name}`);
+            } else {
+                if (!isImage) {
+                    urlMap.set(normalizedUrl, [channel]);
+                }
+                channels.push(channel);
+                
+                if (isImage) {
+                    linksToTest.push(url);
+                } else if (url) {
+                    linksToTest.push(url);
+                }
+            }
+        }
+    }
+    
+    const uniqueChannels = [];
+    const uniqueLinks = [];
+    const processedUrls = new Set();
+    
+    channels.forEach(channel => {
+        if (channel.isImage) {
+            uniqueChannels.push(channel);
+            if (channel.logo) {
+                uniqueLinks.push(channel.logo);
+            }
+        } else if (channel.url) {
+            const normalizedUrl = normalizeURL(channel.url);
+            
+            if (!processedUrls.has(normalizedUrl)) {
+                processedUrls.add(normalizedUrl);
+                uniqueChannels.push(channel);
+                uniqueLinks.push(channel.url);
+            } else {
+                channel.excludedAsDuplicate = true;
+            }
+        }
+    });
+    
+    channels = uniqueChannels;
+    linksToTest = uniqueLinks;
+    
+    updateChannelsList();
+    
+    document.getElementById('total').textContent = linksToTest.length;
+    document.getElementById('unique').textContent = linksToTest.length;
+    document.getElementById('extractedCount').textContent = `(${channels.length} unique of ${urlMap.size + channels.filter(c => c.isImage).length} found)`;
+    
+    document.getElementById('startBtn').disabled = false;
+    
+    showTab('test');
+    
+    const totalFound = urlMap.size + channels.filter(c => c.isImage).length;
+    const duplicatesRemoved = totalFound - channels.length;
+    
+    addLog(`✅ ${channels.length} unique items extracted (${duplicatesRemoved} duplicates removed)`);
+    
+    if (duplicatesRemoved > 0) {
+        addLog(`🔄 Removed ${duplicatesRemoved} duplicate URLs`);
+    }
+}
+
+function removeDuplicates() {
+    const text = document.getElementById('inputText').value;
+    if (!text.trim()) {
+        alert('No text to process!');
+        return;
+    }
+    
+    const lines = text.split('\n');
+    const uniqueLines = [];
+    const seenUrls = new Set();
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('http')) {
+            const normalizedUrl = normalizeURL(line);
+            
+            if (!seenUrls.has(normalizedUrl)) {
+                seenUrls.add(normalizedUrl);
+                uniqueLines.push(lines[i]);
+                
+                if (i > 0 && lines[i-1].trim().startsWith('#EXTINF:')) {
+                    if (!uniqueLines.includes(lines[i-1])) {
+                        uniqueLines.push(lines[i-1]);
+                    }
+                }
+            } else {
+                addLog(`⏩ Skipping duplicate URL: ${line.substring(0, 60)}...`);
+            }
+        } else {
+            if (!line.startsWith('#EXTINF:') || 
+                (i + 1 < lines.length && lines[i+1].trim().startsWith('http') && 
+                 seenUrls.has(normalizeURL(lines[i+1].trim())))) {
+                uniqueLines.push(lines[i]);
+            }
+        }
+    }
+    
+    document.getElementById('inputText').value = uniqueLines.join('\n');
+    addLog(`🧹 Removed ${lines.length - uniqueLines.length} duplicate lines`);
+}
+
+function updateChannelsList() {
+    const container = document.getElementById('channelsList');
+    container.innerHTML = '';
+    
+    if (channels.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #aaa; padding: 20px;">No channels extracted yet.</div>';
+        return;
+    }
+    
+    const groups = {};
+    channels.forEach(channel => {
+        if (!groups[channel.group]) {
+            groups[channel.group] = [];
+        }
+        groups[channel.group].push(channel);
+    });
+    
+    Object.keys(groups).forEach(groupName => {
+        const groupDiv = document.createElement('div');
+        groupDiv.style.marginBottom = '20px';
+        groupDiv.innerHTML = `<h4 style="color: #09f; margin-bottom: 10px;">${groupName} (${groups[groupName].length})</h4>`;
+        
+        groups[groupName].forEach(channel => {
+            const item = document.createElement('div');
+            item.className = 'channel-item';
+            
+            if (channel.excludedAsDuplicate) {
+                item.classList.add('duplicate-item');
+            }
+            
+            let logoHtml = '';
+            if (channel.logo) {
+                logoHtml = `<img src="${channel.logo}" class="channel-logo" alt="Logo" onerror="this.style.display='none'">`;
+            }
+            
+            let urlInfo = '';
+            if (channel.url && !channel.isImage) {
+                const urlDisplay = channel.url.length > 50 ? channel.url.substring(0, 50) + '...' : channel.url;
+                urlInfo = `<div style="font-size: 10px; color: #aaa; margin-top: 2px;">${urlDisplay}</div>`;
+            } else if (channel.isImage) {
+                urlInfo = `<div style="font-size: 10px; color: #ff9900; margin-top: 2px;">[IMAGE] ${channel.logo.substring(0, 50)}...</div>`;
+            }
+            
+            let statusHtml = '<span class="channel-status status-pending">Pending</span>';
+            if (channel.tested) {
+                statusHtml = channel.status === 'working' 
+                    ? '<span class="channel-status status-working">✓ Working</span>'
+                    : '<span class="channel-status status-failed">✗ Failed</span>';
+            }
+            
+            let duplicateBadge = '';
+            if (channel.isDuplicate && !channel.excludedAsDuplicate) {
+                duplicateBadge = '<span class="info-badge" title="Duplicate URL">🔄</span>';
+            } else if (channel.excludedAsDuplicate) {
+                duplicateBadge = '<span class="info-badge" title="Removed as duplicate">🚫</span>';
+            }
+            
+            item.innerHTML = `
+                ${logoHtml}
+                <div class="channel-info">
+                    <div style="font-weight: bold;">${channel.name} ${duplicateBadge}</div>
+                    ${urlInfo}
+                </div>
+                ${statusHtml}
+            `;
+            
+            groupDiv.appendChild(item);
+        });
+        
+        container.appendChild(groupDiv);
+    });
+}
+
+function loadExample() {
+    const example = `#EXTINF:-1 tvg-logo="https://imgur.com/vH2tkQt.png" group-title="Movie Channels",TNT Séries HD
+https://brflu.walk-tv.com/5904/tracks-v1a1/mono.m3u8
+
+#EXTINF:-1 tvg-logo="https://imgur.com/wMstLkc.png" group-title="ADDITIONAL",SONY CLASSICS
+https://spt-sonyoneclassicas-1-br.samsung.wurl.tv/playlist.m3u8
+
+#EXTINF:-1 tvg-logo="" group-title="NEWS",CNN BRASIL
+https://stream.ichibantv.com:3764/hybrid/play.m3u8
+
+#EXTINF:-1 tvg-logo="" group-title="NEWS",CNN BRASIL 2
+https://stream.ichibantv.com:3764/hybrid/play.m3u8
+
+#EXTINF:-1 group-title="VARIETY",TV NOVA NORDESTE
+http://liveabr2.sambatech.com.br/abr/amazonsatabr1_3e9c859611a5e7fbedc785bd33c418b5/livestream.m3u8
+
+https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8
+
+http://42747t.lp.azioncdn.net/2747t/a/mp4:access_options/rtmp-live/atl_poa.sdp/playlist.m3u8
+
+http://42747t.lp.azioncdn.net/2747t/a/mp4:access_options/rtmp-live/atl_poa.sdp/playlist.m3u8
+
+Test image: https://listaiptv.gratis/logos/imagens/loadingamarelo.png
+
+#EXTINF:-1 tvg-logo="https://example.com/logo.png" group-title="SPORTS",SPORT 1
+https://example1.com/stream.m3u8
+
+#EXTINF:-1 tvg-logo="" group-title="SPORTS",SPORT 2
+https://example2.com/live.m3u8
+
+#EXTINF:-1 tvg-logo="" group-title="SPORTS",SPORT 1 DUPLICATE
+https://example1.com/stream.m3u8`;
+
+    document.getElementById('inputText').value = example;
+}
+
+function clearText() {
+    document.getElementById('inputText').value = '';
+    document.getElementById('channelsList').innerHTML = '';
+    document.getElementById('extractedCount').textContent = '';
+    channels = [];
+    linksToTest = [];
+    urlMap.clear();
+    document.getElementById('startBtn').disabled = true;
+    addLog('📭 Text cleared');
+}
+
+function addLog(message) {
+    const logsDiv = document.getElementById('testLogs');
+    const logEntry = document.createElement('div');
+    logEntry.style.padding = '5px 0';
+    logEntry.style.borderBottom = '1px solid #333';
+    logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    logsDiv.appendChild(logEntry);
+    logsDiv.scrollTop = logsDiv.scrollHeight;
+}
+
+function updateStats() {
+    document.getElementById('total').textContent = linksToTest.length;
+    document.getElementById('working').textContent = state.working;
+    document.getElementById('failed').textContent = state.failed;
+    document.getElementById('tested').textContent = state.tested;
+    document.getElementById('unique').textContent = linksToTest.length;
+    
+    const progress = (state.tested / linksToTest.length) * 100;
+    document.getElementById('progress').style.width = progress + '%';
+    
+    const workingCount = state.working;
+    document.getElementById('workingCountCopy').textContent = `${workingCount} working`;
+    
+    if (workingCount > 0) {
+        document.getElementById('quickCopySection').style.display = 'block';
+        document.getElementById('copyWorkingBtnMain').style.display = 'inline-block';
+    }
+    
+    updateChannelsList();
+}
+
+function showResult(link, success, time = null, channelIndex = null) {
+    const area = document.getElementById("results");
+    const line = document.createElement("div");
+    
+    let channelName = 'Link';
+    if (channelIndex !== null && channels[channelIndex]) {
+        channelName = channels[channelIndex].name;
+    }
+    
+    if (success) {
+        line.className = "working";
+        line.innerHTML = `
+            ✅ <strong>WORKING</strong> | ${channelName}
+            <br><span class="link-text">${link}</span>
+            ${time ? `<small style="color:#aaa;"> (${time}ms)</small>` : ''}
+        `;
+    } else {
+        line.className = "fail";
+        line.innerHTML = `
+            ❌ <strong>FAILED</strong> | ${channelName}
+            <br><span class="link-text">${link}</span>
+            ${time ? `<small style="color:#aaa;"> (${time}ms)</small>` : ''}
+        `;
+    }
+    
+    area.appendChild(line);
+    area.scrollTop = area.scrollHeight;
+}
+
+function showTesting(link, channelIndex = null) {
+    const area = document.getElementById("results");
+    const line = document.createElement("div");
+    line.className = "testing";
+    
+    let channelName = 'Link';
+    if (channelIndex !== null && channels[channelIndex]) {
+        channelName = channels[channelIndex].name;
+    }
+    
+    line.innerHTML = `⏳ Testing: ${channelName} | <span class="link-text">${link.substring(0, 80)}...</span>`;
+    area.appendChild(line);
+    area.scrollTop = area.scrollHeight;
+}
+
+function testLink(link, isImage = false) {
+    return new Promise((resolve) => {
+        const start = Date.now();
+        
+        if (isImage) {
+            const img = new Image();
+            img.onload = function() {
+                resolve({ success: true, time: Date.now() - start });
+            };
+            img.onerror = function() {
+                resolve({ success: false, time: Date.now() - start });
+            };
+            img.src = link;
+            return;
+        }
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, 10000);
+        
+        fetch(link, { 
+            method: 'HEAD',
+            mode: 'no-cors',
+            signal: controller.signal
+        }).then(() => {
+            clearTimeout(timeoutId);
+            resolve({ success: true, time: Date.now() - start });
+        }).catch(() => {
+            clearTimeout(timeoutId);
+            
+            const video = document.createElement("video");
+            video.src = link;
+            video.muted = true;
+            video.preload = "metadata";
+            video.crossOrigin = "anonymous";
+            video.playsInline = true;
+            video.style.display = "none";
+            
+            let videoTimeout = setTimeout(() => {
+                video.src = "";
+                video.load();
+                if (video.parentNode) document.body.removeChild(video);
+                resolve({ success: false, time: Date.now() - start });
+            }, 5000);
+            
+            video.onloadedmetadata = () => {
+                clearTimeout(videoTimeout);
+                video.src = "";
+                video.load();
+                if (video.parentNode) document.body.removeChild(video);
+                resolve({ success: true, time: Date.now() - start });
+            };
+            
+            video.onerror = () => {
+                clearTimeout(videoTimeout);
+                video.src = "";
+                video.load();
+                if (video.parentNode) document.body.removeChild(video);
+                resolve({ success: false, time: Date.now() - start });
+            };
+            
+            document.body.appendChild(video);
+        });
+    });
+}
+
+async function startTests() {
+    if (state.running || linksToTest.length === 0) {
+        if (linksToTest.length === 0) {
+            alert('Please process some text first in the "Input Data" tab!');
+            showTab('input');
+        }
+        return;
+    }
+    
+    state = {
+        running: true,
+        stopped: false,
+        working: 0,
+        failed: 0,
+        tested: 0,
+        unique: linksToTest.length
+    };
+    
+    document.getElementById("results").innerHTML = "";
+    document.getElementById("startBtn").disabled = true;
+    document.getElementById("stopBtn").disabled = false;
+    document.getElementById("resultsBtn").disabled = true;
+    document.getElementById("quickCopySection").style.display = 'none';
+    document.getElementById("copyWorkingBtnMain").style.display = 'none';
+    
+    channels.forEach(channel => {
+        channel.status = 'pending';
+        channel.tested = false;
+    });
+    
+    document.getElementById('testLogs').innerHTML = '';
+    
+    updateStats();
+    addLog('🚀 Starting tests...');
+    addLog(`📊 Testing ${linksToTest.length} unique URLs`);
+    
+    for (let i = 0; i < linksToTest.length; i++) {
+        if (state.stopped) break;
+        
+        const link = linksToTest[i];
+        const isImage = channels[i] && channels[i].isImage;
+        
+        showTesting(link, i);
+        addLog(`Testing: ${channels[i]?.name || 'Link'}...`);
+        
+        const result = await testLink(link, isImage);
+        
+        const area = document.getElementById("results");
+        if (area.lastChild) {
+            area.removeChild(area.lastChild);
+        }
+        
+        state.tested++;
+        
+        if (result.success) {
+            state.working++;
+            if (channels[i]) {
+                channels[i].status = 'working';
+                channels[i].tested = true;
+            }
+            addLog(`✅ ${channels[i]?.name || 'Link'} WORKING (${result.time}ms)`);
+        } else {
+            state.failed++;
+            if (channels[i]) {
+                channels[i].status = 'failed';
+                channels[i].tested = true;
+            }
+            addLog(`❌ ${channels[i]?.name || 'Link'} FAILED (${result.time}ms)`);
+        }
+        
+        showResult(link, result.success, result.time, i);
+        updateStats();
+        
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    state.running = false;
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+    document.getElementById("resultsBtn").disabled = false;
+    
+    generateFormattedResults();
+    
+    addLog(`🏁 Tests completed! ${state.working} working, ${state.failed} failed`);
+    
+    const area = document.getElementById("results");
+    const summary = document.createElement("div");
+    summary.style.cssText = "background: #222; padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center;";
+    summary.innerHTML = `
+        <h3>✅ Tests Completed!</h3>
+        <p>${state.working} links working of ${linksToTest.length} unique URLs tested</p>
+        <p>Success rate: ${((state.working / linksToTest.length) * 100).toFixed(1)}%</p>
+        <p><button onclick="showTab('results')" style="margin-top: 10px;">📋 View Formatted Results</button></p>
+    `;
+    area.appendChild(summary);
+}
+
+function stopTests() {
+    state.stopped = true;
+    state.running = false;
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+    
+    const area = document.getElementById("results");
+    const message = document.createElement("div");
+    message.style.cssText = "background: #333; padding: 10px; margin: 10px 0; border-radius: 5px; color: #ff0;";
+    message.textContent = "⏹ Tests stopped by user";
+    area.appendChild(message);
+    
+    addLog('⏸️ Tests stopped by user');
+}
+
+function clearResults() {
+    document.getElementById("results").innerHTML = "";
+    document.getElementById("quickCopySection").style.display = 'none';
+    document.getElementById("copyWorkingBtnMain").style.display = 'none';
+    
+    channels.forEach(channel => {
+        channel.status = 'pending';
+        channel.tested = false;
+    });
+    
+    state = {
+        running: false,
+        stopped: false,
+        working: 0,
+        failed: 0,
+        tested: 0,
+        unique: linksToTest.length
+    };
+    
+    updateStats();
+    updateChannelsList();
+    addLog('🧹 Results cleared');
+}
+
+function copyWorkingLinks() {
+    const workingLinks = [];
+    
+    channels.forEach(channel => {
+        if (channel.tested && channel.status === 'working' && channel.url && !channel.isImage) {
+            workingLinks.push(channel.url);
+        }
+    });
+    
+    if (workingLinks.length === 0) {
+        showNotification('❌ No working links to copy!', 'error');
+        return;
+    }
+    
+    const text = workingLinks.join('\n');
+    copyToClipboard(text, `✅ ${workingLinks.length} working links copied!`);
+}
+
+function copyWorkingPlaylist() {
+    let output = '#EXTM3U\n\n';
+    
+    const groups = {};
+    channels.forEach(channel => {
+        if (channel.tested && channel.status === 'working' && channel.url && !channel.isImage) {
+            if (!groups[channel.group]) {
+                groups[channel.group] = [];
+            }
+            groups[channel.group].push(channel);
+        }
+    });
+    
+    Object.keys(groups).forEach(groupName => {
+        output += `#EXTINF:-1 group-title="${groupName}",╔══════ ${groupName} ══════\n`;
+        output += `#EXTVLCOPT:network-caching=1000\n\n`;
+        
+        groups[groupName].forEach(channel => {
+            let logoUrl = channel.logo || '';
+            output += `#EXTINF:-1 tvg-id="" tvg-logo="${logoUrl}" group-title="${groupName}",${channel.name}\n`;
+            output += `${channel.url}\n\n`;
+        });
+    });
+    
+    if (output === '#EXTM3U\n\n') {
+        showNotification('❌ No working channels to copy!', 'error');
+        return;
+    }
+    
+    copyToClipboard(output, `✅ Playlist with ${Object.keys(groups).reduce((acc, group) => acc + groups[group].length, 0)} channels copied!`);
+}
+
+function copyWorkingUrlsOnly() {
+    const workingUrls = [];
+    
+    channels.forEach(channel => {
+        if (channel.tested && channel.status === 'working' && channel.url && !channel.isImage) {
+            workingUrls.push(channel.url);
+        }
+    });
+    
+    if (workingUrls.length === 0) {
+        showNotification('❌ No working links to copy!', 'error');
+        return;
+    }
+    
+    const text = workingUrls.join('\n');
+    copyToClipboard(text, `✅ ${workingUrls.length} URLs copied!`);
+}
+
+function copyToClipboard(text, message) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification(message, 'success');
+    }).catch(err => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification(message, 'success');
+    });
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('copyNotification');
+    notification.textContent = message;
+    notification.style.background = type === 'success' ? '#0f0' : '#f00';
+    notification.style.color = type === 'success' ? '#000' : '#fff';
+    notification.style.display = 'block';
+    notification.style.opacity = '1';
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 1000);
+    }, 2000);
+}
+
+function generateFormattedResults() {
+    const outputArea = document.getElementById('outputArea');
+    
+    let total = 0;
+    let working = 0;
+    let failed = 0;
+    let unique = 0;
+    
+    let filteredChannels = channels;
+    
+    if (currentFilter === 'working') {
+        filteredChannels = channels.filter(c => c.tested && c.status === 'working' && !c.isImage);
+    } else if (currentFilter === 'failed') {
+        filteredChannels = channels.filter(c => c.tested && c.status === 'failed' && !c.isImage);
+    } else {
+        filteredChannels = channels.filter(c => !c.isImage);
+    }
+    
+    let output = '#EXTM3U\n\n';
+    
+    const groups = {};
+    filteredChannels.forEach(channel => {
+        if (!groups[channel.group]) {
+            groups[channel.group] = [];
+        }
+        groups[channel.group].push(channel);
+        
+        total++;
+        if (channel.tested) {
+            if (channel.status === 'working') working++;
+            else failed++;
+        }
+        if (!channel.excludedAsDuplicate) unique++;
+    });
+    
+    Object.keys(groups).forEach(groupName => {
+        const groupChannels = groups[groupName];
+        
+        output += `#EXTINF:-1 group-title="${groupName}",╔══════ ${groupName} ══════\n`;
+        output += `#EXTVLCOPT:network-caching=1000\n\n`;
+        
+        groupChannels.forEach(channel => {
+            let statusIcon = '🔘';
+            if (channel.tested) {
+                statusIcon = channel.status === 'working' ? '✅' : '❌';
+            }
+            
+            let logoUrl = channel.logo || '';
+            
+            if (channel.url) {
+                let displayName = channel.name;
+                if (channel.excludedAsDuplicate) {
+                    displayName = `[DUPLICATE REMOVED] ${displayName}`;
+                } else if (channel.isDuplicate) {
+                    displayName = `[DUPLICATE] ${displayName}`;
+                }
+                
+                output += `#EXTINF:-1 tvg-id="" tvg-logo="${logoUrl}" group-title="${groupName}",${statusIcon} ${displayName}\n`;
+                output += `${channel.url}\n\n`;
+            }
+        });
+        
+        output += `\n`;
+    });
+    
+    const testedImages = channels.filter(c => c.isImage && c.tested);
+    if (testedImages.length > 0) {
+        output += `#EXTINF:-1 group-title="TESTED LOGOS",╔══════ TESTED LOGOS ══════\n`;
+        output += `#EXTVLCOPT:network-caching=1000\n\n`;
+        
+        testedImages.forEach(image => {
+            let statusIcon = image.status === 'working' ? '✅' : '❌';
+            output += `# Comment: ${statusIcon} ${image.name} - ${image.logo}\n`;
+        });
+        
+        output += `\n`;
+    }
+    
+    if (total === 0) {
+        output = 'No results to display. Run tests first.';
+    } else {
+        output += `\n# Statistics:\n`;
+        output += `# Total channels: ${total}\n`;
+        output += `# Working: ${working}\n`;
+        output += `# Failed: ${failed}\n`;
+        output += `# Unique URLs tested: ${linksToTest.length}\n`;
+        output += `# Duplicates removed: ${channels.filter(c => c.excludedAsDuplicate).length}\n`;
+    }
+    
+    outputArea.textContent = output;
+    
+    document.getElementById('totalResults').textContent = total;
+    document.getElementById('workingResults').textContent = working;
+    document.getElementById('failedResults').textContent = failed;
+    document.getElementById('uniqueResults').textContent = unique;
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`filter${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`).classList.add('active');
+}
+
+function filterResults(type) {
+    currentFilter = type;
+    generateFormattedResults();
+}
+
+function copyResults() {
+    const outputArea = document.getElementById('outputArea');
+    const text = outputArea.textContent;
+    
+    if (!text || text === 'No results to display. Run tests first.') {
+        showNotification('❌ No results to copy!', 'error');
+        return;
+    }
+    
+    copyToClipboard(text, '✅ Playlist copied to clipboard!');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadExample();
+    addLog('🟢 System started. Paste your M3U8 content in the "Input Data" tab');
+});
+</script>
+
+</body>
+</html>

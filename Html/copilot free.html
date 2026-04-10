@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synh Search - Intelligent Search Engine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #A347FF;
+            --secondary-color: #FF5A73;
+            --bg-color: #0d0d0d;
+            --search-box-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --sub-text-color: #8f8f8f;
+            --citation-bg: #222222;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        #content-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .top-header {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px 20px 0 20px;
+            box-sizing: border-box;
+            background-color: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right .profile-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .main-container {
+            width: 100%;
+            max-width: 700px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: justify-content 0.5s ease-out, padding-top 0.5s ease-out;
+        }
+
+        .main-container.has-results {
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
+        
+        .logo-section {
+            margin-bottom: 30px;
+            transition: margin-bottom 0.5s;
+        }
+
+        .main-container.has-results .logo-section {
+            display: none;
+        }
+        
+        .logo-section h1 {
+            font-size: 5em;
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: -3px;
+            background: -webkit-linear-gradient(135deg, var(--secondary-color), var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 8px rgba(255, 90, 115, 0.3);
+        }
+
+        .search-box-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: transparent;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 580px;
+            border: 1px solid #333;
+            transition: box-shadow 0.3s, border-color 0.3s;
+            overflow: hidden;
+        }
+
+        .search-box:focus-within {
+             box-shadow: 0 4px 10px rgba(163, 71, 255, 0.4);
+             border-color: var(--primary-color);
+        }
+
+        #text-input {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border: none;
+            background: var(--search-box-color);
+            color: var(--text-color);
+            font-size: 1.1em;
+            outline: none;
+        }
+        
+        .search-icon-group {
+            display: flex;
+            align-items: center;
+            padding-right: 15px;
+            background-color: var(--search-box-color);
+        }
+        
+        .search-icon-group button {
+            color: var(--primary-color);
+            font-size: 1.1em;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: color 0.3s;
+        }
+        
+        .search-icon-group button:hover:not(:disabled) {
+             color: var(--secondary-color);
+        }
+
+        .search-icon-group button:disabled {
+             color: #4a2d71;
+             cursor: not-allowed;
+        }
+
+        .sub-nav {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            margin-top: 20px;
+            padding-left: 20px;
+            border-bottom: 1px solid #333;
+            box-sizing: border-box;
+            display: none;
+        }
+        
+        .main-container.has-results .sub-nav {
+             display: flex;
+        }
+        
+        .nav-item {
+            color: var(--sub-text-color);
+            font-size: 0.9em;
+            padding-bottom: 8px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: bold;
+            padding-right: 20px;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        #result-area {
+            width: 100%;
+            padding-top: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            display: none;
+        }
+        
+        #status-message {
+            text-align: left;
+            margin: 20px 0;
+            font-weight: 500;
+            min-height: 20px;
+            color: var(--secondary-color);
+            padding: 5px 0;
+        }
+        
+        #status-message i {
+            margin-right: 8px;
+        }
+
+        .loading {
+            color: var(--primary-color);
+        }
+        
+        .loading::before {
+             content: "\f110";
+             font-family: 'Font Awesome 6 Free';
+             font-weight: 900;
+             animation: spin 1s infinite linear;
+        }
+        
+        .success::before {
+             content: "\f058";
+             font-family: 'Font Awesome 6 Free';
+             font-weight: 900;
+             color: #28a745;
+        }
+        
+        .error::before {
+             content: "\f06a";
+             font-family: 'Font Awesome 6 Free';
+             font-weight: 900;
+             color: var(--secondary-color);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .answer-snippet { padding: 10px 0; margin-bottom: 20px; }
+        .answer-snippet h2 { color: var(--secondary-color); font-size: 1.3em; margin-bottom: 15px; }
+        #answer-content { line-height: 1.6; white-space: pre-wrap; background-color: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); font-size: 0.95em; }
+        #answer-content strong { color: var(--secondary-color); font-weight: 700; }
+        #answer-content h3 { color: var(--primary-color); font-size: 1.2em; margin-top: 20px; margin-bottom: 5px; }
+        #answer-content hr { border: none; border-top: 1px dashed #333; margin: 15px 0; }
+        #answer-content ul { padding-left: 20px; list-style-type: none; }
+        #answer-content ul li::before { content: "•"; color: var(--secondary-color); font-weight: bold; display: inline-block; width: 1em; margin-left: -1em; }
+
+        .citations-section { margin-top: 20px; padding-top: 10px; }
+        .citations-section h3 { color: var(--text-color); font-size: 1.1em; margin-bottom: 15px; }
+        .citation-item { display: block; margin-bottom: 15px; text-decoration: none; color: var(--text-color); padding: 10px; background-color: var(--citation-bg); border-radius: 8px; border-left: 3px solid var(--secondary-color); transition: background-color 0.3s; }
+        .citation-item:hover { background-color: #2e2e2e; }
+        .citation-item .site-url { color: var(--primary-color); font-size: 0.85em; display: flex; align-items: center; margin-bottom: 4px; }
+        .citation-item .site-url img { width: 14px; height: 14px; margin-right: 5px; border-radius: 2px; }
+        .citation-item .link-title { font-size: 1.1em; font-weight: 500; color: var(--text-color); }
+
+        .particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        .footer { text-align: center; padding: 15px; font-size: 0.75em; color: var(--sub-text-color); width: 100%; background: var(--bg-color); border-top: 1px solid #333; z-index: 10; }
+
+        @media (max-width: 600px) {
+            .logo-section h1 { font-size: 4em; }
+            .search-box { max-width: 100%; }
+            .main-container { padding: 0 10px; }
+            .top-header { padding: 10px 10px 0 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js" class="particles-js"></div>
+
+    <div class="top-header">
+        <div class="header-right">
+            <div class="profile-icon">S</div>
+        </div>
+    </div>
+
+    <div id="content-wrapper">
+        <div id="main-container" class="main-container">
+            
+            <div class="logo-section">
+                <h1>Synh</h1>
+            </div>
+
+            <div class="search-box-wrapper">
+                <div class="search-box">
+                    <input type="text" id="text-input" placeholder="Ask anything..." required>
+                    <div class="search-icon-group">
+                        <button id="send-button" disabled><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sub-nav" class="sub-nav">
+                <div class="nav-item active">ALL</div>
+            </div>
+
+            <div id="status-message"></div>
+        </div>
+
+        <div id="result-area">
+            
+            <div class="answer-snippet">
+                <h2>Main Answer</h2>
+                <div id="answer-content"></div>
+            </div>
+
+            <div class="citations-section">
+                <h3>Related Sources</h3>
+                <div id="citation-list"></div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="footer">
+        Powered by API Deline.
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <script>
+        const ENDPOINT = "https://api.deline.web.id/ai/copilot-think?text=";
+        const mainContainer = document.getElementById('main-container');
+        const textInput = document.getElementById('text-input');
+        const sendButton = document.getElementById('send-button');
+        const statusMessage = document.getElementById('status-message');
+        const resultArea = document.getElementById('result-area');
+        const answerContent = document.getElementById('answer-content');
+        const citationList = document.getElementById('citation-list');
+        const subNav = document.getElementById('sub-nav');
+        
+        textInput.addEventListener('input', () => {
+            sendButton.disabled = textInput.value.trim().length === 0;
+        });
+
+        function setStatus(message, className = '') {
+            statusMessage.textContent = message;
+            statusMessage.className = '';
+
+            if (className === 'loading') {
+                 statusMessage.innerHTML = `<span class="${className}"></span> Searching and analyzing sources...`;
+            } else if (className === 'success') {
+                 statusMessage.innerHTML = `<span class="${className}"></span> Search completed.`;
+            } else if (className === 'error') {
+                 statusMessage.innerHTML = `<span class="${className}"></span> ${message}`;
+            } else {
+                 statusMessage.textContent = message;
+            }
+        }
+
+        function convertMarkdownToHtml(text) {
+            if (!text) return '';
+            
+            let html = text.replace(/---\n/g, '<hr>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/### (.*)\n/g, '<h3>$1</h3>');
+            
+            html = html.split('\n').map(line => {
+                if (line.trim().startsWith('- ')) {
+                    return `<li>${line.trim().substring(2)}</li>`;
+                }
+                return line;
+            }).join('\n');
+            
+            const listRegex = /(^<li>.*<\/li>(\n<li>.*<\/li>)*)/gms;
+            html = html.replace(listRegex, '<ul>$1</ul>');
+            
+            html = html.replace(new RegExp('<br>', 'g'), '\n');
+            html = html.replace(listRegex, '<ul>$1</ul>');
+            html = html.replace(/\n/g, '<br>');
+            
+            return html;
+        }
+
+        async function handleSearch() {
+            const text = textInput.value.trim();
+            if (text === "") return;
+
+            mainContainer.classList.add('has-results');
+            resultArea.style.display = 'none';
+            answerContent.innerHTML = '';
+            citationList.innerHTML = '';
+            subNav.style.display = 'none';
+            sendButton.disabled = true;
+            textInput.disabled = true;
+            setStatus('', 'loading');
+
+            try {
+                const encodedText = encodeURIComponent(text);
+                const apiURL = ENDPOINT + encodedText;
+
+                const response = await fetch(apiURL);
+                const data = await response.json();
+
+                if (data.status === true && data.result) {
+                    setStatus('', 'success');
+                    resultArea.style.display = 'block';
+                    subNav.style.display = 'flex';
+                    
+                    answerContent.innerHTML = convertMarkdownToHtml(data.result.text);
+
+                    if (data.result.citations && data.result.citations.length > 0) {
+                        const uniqueCitations = Array.from(new Map(data.result.citations.map(item => [item.url, item])).values());
+
+                        uniqueCitations.forEach(citation => {
+                            const item = document.createElement('a');
+                            item.href = citation.url;
+                            item.target = '_blank';
+                            item.classList.add('citation-item');
+                            
+                            let urlDisplay = new URL(citation.url).hostname.replace('www.', '');
+
+                            item.innerHTML = `
+                                <div class="site-url">
+                                    <img src="${citation.icon || ''}" alt="Icon" onerror="this.style.display='none';">
+                                    ${urlDisplay}
+                                </div>
+                                <div class="link-title">${citation.title}</div>
+                            `;
+
+                            citationList.appendChild(item);
+                        });
+                    } else {
+                         citationList.innerHTML = `<p style="color: var(--sub-text-color); font-size: 0.9em; padding: 10px 0;">No sources available.</p>`;
+                    }
+
+                } else {
+                    setStatus('Failed to get answer. Please try again.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                setStatus('Network error or API server not responding.', 'error');
+            } finally {
+                sendButton.disabled = false;
+                textInput.disabled = false;
+                sendButton.disabled = textInput.value.trim().length === 0;
+            }
+        }
+
+        sendButton.addEventListener('click', handleSearch);
+        textInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !sendButton.disabled) {
+                handleSearch();
+            }
+        });
+        
+        particlesJS('particles-js', {
+            "particles": { "number": { "value": 70, "density": { "enable": true, "value_area": 800 } }, "color": { "value": ["#A347FF", "#FF5A73"] }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": true }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#333", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false } },
+            "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true } },
+            "retina_detect": true
+        });
+    </script>
+</body>
+</html>

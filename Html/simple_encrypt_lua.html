@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lua Encryptor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Consolas', monospace; 
+            background: #0a0a0a; 
+            color: #e0e0e0; 
+            padding: 20px; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid #007acc; 
+        }
+        h1 { color: #007acc; margin-bottom: 10px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        
+        .card { 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            border-radius: 5px; 
+            overflow: hidden; 
+        }
+        .card-header { 
+            padding: 12px 20px; 
+            background: rgba(0,0,0,0.3); 
+            border-bottom: 1px solid #333; 
+        }
+        .card-content { padding: 20px; }
+        
+        .upload-area { 
+            border: 2px dashed #444; 
+            border-radius: 5px; 
+            padding: 40px 20px; 
+            text-align: center; 
+            cursor: pointer; 
+        }
+        .upload-area:hover { border-color: #007acc; }
+        
+        .btn { 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            font-family: inherit; 
+            margin-top: 10px; 
+        }
+        .btn:hover { background: #005a9e; }
+        .btn-secondary { background: #555; }
+        
+        .file-info { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: rgba(0,0,0,0.2); 
+            border-left: 3px solid #007acc; 
+        }
+        
+        .code-container { 
+            background: #000; 
+            border: 1px solid #333; 
+            height: 500px; 
+            overflow: auto; 
+            padding: 15px; 
+            font-size: 12px; 
+            line-height: 1.4; 
+            white-space: pre; 
+            font-family: 'Consolas', monospace; 
+        }
+        
+        .controls { margin: 20px 0; }
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; color: #888; }
+        .control-group input, .control-group select { 
+            width: 100%; 
+            padding: 8px; 
+            background: rgba(0,0,0,0.3); 
+            border: 1px solid #333; 
+            color: white; 
+            font-family: inherit; 
+        }
+        
+        .status { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #1a1a1a; 
+            border: 1px solid #007acc; 
+            padding: 10px 15px; 
+            border-radius: 3px; 
+            display: none; 
+        }
+        .status.show { display: block; }
+        .status.error { border-color: #f55; }
+        
+        .loading { 
+            text-align: center; 
+            padding: 20px; 
+            display: none; 
+        }
+        .loading.show { display: block; }
+        
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            margin-top: 20px; 
+        }
+        .stat { 
+            background: rgba(0,0,0,0.2); 
+            padding: 10px; 
+            text-align: center; 
+            border-radius: 3px; 
+        }
+        .stat-value { font-size: 14px; font-weight: bold; }
+        .stat-label { font-size: 11px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LUA  ENCRYPTOR (suport gameguardian) </h1>
+            <div class="subtitle">by Batman Games</div>
+        </header>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">INPUT</div>
+                <div class="card-content">
+                    <div class="upload-area" id="dropArea">
+                        <div>📁 DRAG FILE HERE</div>
+                        <div style="font-size: 12px; color: #888; margin: 10px 0;">or click to select</div>
+                        <input type="file" id="fileInput" accept=".lua" style="display: none;">
+                        <button class="btn" id="browseBtn">SELECT .lua FILE</button>
+                    </div>
+                    
+                    <div id="fileInfo" style="display: none;">
+                        <div class="file-info">
+                            <div><strong>File:</strong> <span id="fileName"></span></div>
+                            <div><strong>Size:</strong> <span id="fileSize"></span></div>
+                            <div><strong>Lines:</strong> <span id="fileLines"></span></div>
+                        </div>
+                        
+                        <div class="controls">
+                            <div class="control-group">
+                                <label>🔑 HEX KEY:</label>
+                                <input type="text" id="encryptKey" value="0x55AA" placeholder="Ex: 0x55AA, 0x1234, 0xABCD">
+                                <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                                    Use values between 0x0000 and 0xFFFF
+                                </div>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label>⚙️ VARIABLE COUNT:</label>
+                                <select id="varCount">
+                                    <option value="64">64 variables (Light)</option>
+                                    <option value="128" selected>128 variables (Recommended)</option>
+                                    <option value="150">150 variables (Safe)</option>
+                                    <option value="180">180 variables (Maximum Safe)</option>
+                                    <option value="199">199 variables (Absolute Limit)</option>
+                                </select>
+                                <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                                    Lua has 200 local variables limit per function
+                                </div>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label>🔧 OBFUSCATION MODE:</label>
+                                <select id="obfuscationMode">
+                                    <option value="strings">Strings only</option>
+                                    <option value="api" selected>API + strings</option>
+                                    <option value="full">Full (API + strings + vars)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" id="processBtn" style="width: 100%;">🔒 ENCRYPT</button>
+                        <button class="btn btn-secondary" id="clearBtn" style="width: 100%; margin-top: 10px;">🗑️ CLEAR</button>
+                    </div>
+                    
+                    <div class="loading" id="loading">Processing...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">OUTPUT - PLAIN TEXT</div>
+                <div class="card-content">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn" id="copyBtn">📋 Copy</button>
+                        <button class="btn" id="downloadBtn">💾 Download</button>
+                    </div>
+                    
+                    <div class="code-container" id="outputCode">
+-- Encrypted code will appear here
+-- Plain text, no HTML formatting
+-- Lua has 200 local variables limit per function!
+-- Use up to 199 variables to avoid errors.
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="originalSize">0 B</div>
+                            <div class="stat-label">ORIGINAL</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="finalSize">0 B</div>
+                            <div class="stat-label">FINAL</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="increase">0%</div>
+                            <div class="stat-label">INCREASE</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 10px; font-size: 11px; color: #888;">
+                        <div id="varInfo">Variables: 0</div>
+                        <div id="keyInfo">Key: 0x0000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status" id="status"></div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const dropArea = document.getElementById('dropArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileLines = document.getElementById('fileLines');
+        const processBtn = document.getElementById('processBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const outputCode = document.getElementById('outputCode');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const loading = document.getElementById('loading');
+        const status = document.getElementById('status');
+        const originalSize = document.getElementById('originalSize');
+        const finalSize = document.getElementById('finalSize');
+        const increase = document.getElementById('increase');
+        const varInfo = document.getElementById('varInfo');
+        const keyInfo = document.getElementById('keyInfo');
+        const encryptKey = document.getElementById('encryptKey');
+        const varCount = document.getElementById('varCount');
+        const obfuscationMode = document.getElementById('obfuscationMode');
+        
+        let originalContent = '';
+        let encryptedContent = '';
+        let originalFileName = '';
+        
+        browseBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#007acc';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#444';
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#444';
+            const files = e.dataTransfer.files;
+            if (files.length && files[0].name.toLowerCase().endsWith('.lua')) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+        
+        processBtn.addEventListener('click', processLua);
+        clearBtn.addEventListener('click', clearAll);
+        copyBtn.addEventListener('click', copyToClipboard);
+        downloadBtn.addEventListener('click', downloadFile);
+        
+        encryptKey.addEventListener('input', function() {
+            let key = this.value.trim();
+            if (!key.startsWith('0x')) {
+                key = '0x' + key.replace(/^0x/i, '');
+            }
+            key = key.toUpperCase();
+            key = key.replace(/[^0-9A-Fx]/g, '');
+            this.value = key;
+        });
+        
+        async function handleFileSelect() {
+            if (!fileInput.files.length) return;
+            
+            const file = fileInput.files[0];
+            if (!file.name.toLowerCase().endsWith('.lua')) {
+                showStatus('Only .lua files are supported!', 'error');
+                return;
+            }
+            
+            loading.style.display = 'block';
+            
+            try {
+                originalContent = await readFileAsText(file);
+                originalFileName = file.name;
+                
+                fileName.textContent = file.name;
+                fileSize.textContent = formatSize(file.size);
+                fileLines.textContent = originalContent.split('\n').length;
+                originalSize.textContent = formatSize(file.size);
+                
+                fileInfo.style.display = 'block';
+                
+                showStatus('File loaded: ' + file.name);
+            } catch (error) {
+                showStatus('Error reading file: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+        
+        function processLua() {
+            if (!originalContent) {
+                showStatus('Select a file first!', 'error');
+                return;
+            }
+            
+            let keyValue = encryptKey.value.trim();
+            if (!keyValue.startsWith('0x')) {
+                keyValue = '0x' + keyValue;
+            }
+            
+            const keyInt = parseInt(keyValue, 16);
+            if (isNaN(keyInt)) {
+                showStatus('Invalid hex key! Ex: 0x55AA', 'error');
+                return;
+            }
+            
+            if (keyInt < 0 || keyInt > 0xFFFF) {
+                showStatus('Key must be between 0x0000 and 0xFFFF', 'error');
+                return;
+            }
+            
+            loading.style.display = 'block';
+            
+            try {
+                const numVars = parseInt(varCount.value);
+                const mode = obfuscationMode.value;
+                
+                const safeVarCount = Math.min(numVars, 199);
+                
+                let varSection = '';
+                for (let i = 1; i <= safeVarCount; i++) {
+                    const xorValue = (i ^ (keyInt % 256)) & 0xFF;
+                    varSection += `local v${i} = ${xorValue}\n`;
+                }
+                
+                let processed = processLuaCode(originalContent, mode);
+                
+                const script = generateFinalScript(
+                    processed, 
+                    varSection, 
+                    keyInt, 
+                    safeVarCount,
+                    originalFileName
+                );
+                
+                encryptedContent = script;
+                
+                outputCode.textContent = script;
+                
+                updateStats(originalContent, script, safeVarCount, keyInt);
+                
+                showStatus(`Script processed! ${safeVarCount} variables, key ${keyValue}`);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Error: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        function processLuaCode(code, mode) {
+            let processed = code;
+            
+            processed = processed.replace(/\[=+\[(.*?)\]=+\]/gs, (match, content) => {
+                const bytes = Array.from(content).map(c => c.charCodeAt(0));
+                return `string.char(table.unpack({${bytes.join(',')}}))`;
+            });
+            
+            if (mode !== 'strings') {
+                processed = processed.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (match, content) => {
+                    if (content.length === 0) return '""';
+                    if (match.includes('string.char')) return match;
+                    
+                    const processedContent = content
+                        .replace(/\\n/g, '\n')
+                        .replace(/\\t/g, '\t')
+                        .replace(/\\"/g, '"')
+                        .replace(/\\\\/g, '\\')
+                        .replace(/\\r/g, '\r');
+                    
+                    const bytes = Array.from(processedContent).map(c => c.charCodeAt(0));
+                    return `string.char(table.unpack({${bytes.join(',')}}))`;
+                });
+            }
+            
+            if (mode === 'api' || mode === 'full') {
+                const apiPatterns = [
+                    { pattern: /gg\.(\w+)\(/g, replace: '_G["gg"]["$1"](' },
+                    { pattern: /io\.(\w+)\(/g, replace: '_G["io"]["$1"](' },
+                    { pattern: /os\.(\w+)\(/g, replace: '_G["os"]["$1"](' },
+                    { pattern: /table\.(\w+)\(/g, replace: '_G["table"]["$1"](' },
+                    { pattern: /debug\.(\w+)\(/g, replace: '_G["debug"]["$1"](' },
+                    { pattern: /string\.(\w+)\(/g, replace: '_G["string"]["$1"](' },
+                    { pattern: /bit32\.(\w+)\(/g, replace: '_G["bit32"]["$1"](' }
+                ];
+                
+                for (const { pattern, replace } of apiPatterns) {
+                    processed = processed.replace(pattern, replace);
+                }
+            }
+            
+            return processed;
+        }
+        
+        function generateFinalScript(code, varSection, keyInt, varCount, filename) {
+            return `(function()
+    local config = {
+        key = ${keyInt},
+        vars = ${varCount},
+        time = os.time()
+    }
+    
+    local function xor(a, b)
+        return (a ~ b) & 0xFFFFFFFF
+    end
+    
+${indent(varSection, 4)}
+    
+    (function()
+        local gg, io, os, table, debug, string, bit32 =
+            _G["gg"], 
+            _G["io"], _G["os"], _G["table"],
+            _G["debug"], _G["string"], _G["bit32"]
+        
+        local char, unpack = string.char, table.unpack
+        
+${indent(code, 8)}
+        
+    end)()
+    
+--    collectgarbage()
+end)()`;
+        }
+        
+        function indent(text, spaces) {
+            const indentStr = ' '.repeat(spaces);
+            return text.split('\n').map(line => {
+                if (line.trim() === '') return '';
+                return indentStr + line;
+            }).join('\n');
+        }
+        
+        function updateStats(original, encrypted, varCount, keyInt) {
+            const origBytes = new Blob([original]).size;
+            const encBytes = new Blob([encrypted]).size;
+            const percent = ((encBytes - origBytes) / origBytes * 100).toFixed(1);
+            
+            originalSize.textContent = formatSize(origBytes);
+            finalSize.textContent = formatSize(encBytes);
+            increase.textContent = percent + '%';
+            varInfo.textContent = `Variables: ${varCount}`;
+            keyInfo.textContent = `Key: 0x${keyInt.toString(16).toUpperCase()}`;
+        }
+        
+        function clearAll() {
+            fileInput.value = '';
+            originalContent = '';
+            encryptedContent = '';
+            fileInfo.style.display = 'none';
+            outputCode.textContent = '-- Encrypted code will appear here\n-- Plain text, no HTML formatting\n-- Lua has 200 local variables limit per function!\n-- Use up to 199 variables to avoid errors.';
+            
+            originalSize.textContent = '0 B';
+            finalSize.textContent = '0 B';
+            increase.textContent = '0%';
+            varInfo.textContent = 'Variables: 0';
+            keyInfo.textContent = 'Key: 0x0000';
+            
+            showStatus('Cleared');
+        }
+        
+        function copyToClipboard() {
+            if (!encryptedContent) {
+                showStatus('Nothing to copy!', 'error');
+                return;
+            }
+            
+            navigator.clipboard.writeText(encryptedContent)
+                .then(() => showStatus('Copied to clipboard!'))
+                .catch(err => showStatus('Copy error: ' + err.message, 'error'));
+        }
+        
+        function downloadFile() {
+            if (!encryptedContent) {
+                showStatus('Process a script first!', 'error');
+                return;
+            }
+            
+            const blob = new Blob([encryptedContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            const baseName = originalFileName.replace('.lua', '') || 'script';
+            const keyHex = parseInt(encryptKey.value, 16).toString(16).toUpperCase();
+            const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            
+            a.download = `${baseName}_enc_${keyHex}_${timestamp}.lua`;
+            a.href = url;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('Downloaded: ' + a.download);
+        }
+        
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+        
+        function showStatus(message, type = 'info') {
+            status.textContent = message;
+            status.className = 'status show';
+            if (type === 'error') {
+                status.classList.add('error');
+            } else {
+                status.classList.remove('error');
+            }
+            
+            setTimeout(() => {
+                status.className = 'status';
+            }, 3000);
+        }
+        
+        encryptKey.value = '0x' + (0x55AA).toString(16).toUpperCase();
+    </script>
+</body>
+</html>

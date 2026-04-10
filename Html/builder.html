@@ -1,0 +1,1401 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Builder</title>
+    <style>
+        :root {
+           
+            --primary-color: #4a6cf7;
+            --primary-hover: #3a5cd8;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --warning-color: #ffc107;
+            --warning-hover: #e0a800;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            
+      
+            --sidebar-width: 220px;
+            --header-height: 40px;
+            --properties-height: 200px;
+            --tab-height: 35px;
+            
+         
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 20px;
+            
+          
+            --border-radius: 3px;
+            --border-color: #dee2e6;
+            
+            
+            --font-size-xs: 10px;
+            --font-size-sm: 12px;
+            --font-size-md: 13px;
+            --font-size-lg: 14px;
+            
+
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.15);
+            --shadow-primary: 0 0 0 2px rgba(74, 108, 247, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            overflow: hidden;
+            height: 100vh;
+            font-size: var(--font-size-md);
+        }
+
+        
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-1 { flex: 1; }
+        .gap-sm { gap: var(--spacing-sm); }
+        .gap-md { gap: var(--spacing-md); }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        
+        .header {
+            height: var(--header-height);
+            background: linear-gradient(135deg, var(--primary-color), #2c53d9);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: var(--font-size-lg);
+        }
+        
+        .logo i {
+            margin-right: var(--spacing-sm);
+        }
+        
+
+        .tabs {
+            display: flex;
+            background-color: #e9ecef;
+            height: var(--tab-height);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 0 var(--spacing-lg);
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            height: 100%;
+            min-width: 80px;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+        }
+        
+        .tab i {
+            margin-right: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: auto;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+
+        .main-content {
+            display: flex;
+            flex: 1;
+      
+            overflow: hidden;
+        }
+        
+
+        .sidebar {
+            
+            
+
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-section {
+        	
+            border-bottom: 1px solid #eee;
+        }
+        
+        .sidebar-section h3 {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background-color: #f5f5f5;
+            color: var(--dark-color);
+            font-size: var(--font-size-md);
+            margin: 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            
+            
+        }
+        
+        .sidebar-section h3 i {
+            margin-right: var(--spacing-sm);
+            color: var(--primary-color);
+            
+        }
+        
+        .components-list {
+            padding: var(--spacing-sm);
+            display: flex;
+            
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+        
+        .component-item {
+            background-color: var(--light-color);
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm);
+            cursor: grab;
+            width: 100px;
+            display: flex;
+            align-items: center;
+            font-size: var(--font-size-sm);
+            transition: all 0.2s;
+        }
+        
+        .component-item:hover {
+        	
+            background-color: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .component-item i {
+            margin-right: var(--spacing-sm);
+            color: var(--primary-color);
+            width: 100px;
+            font-size: var(--font-size-sm);
+        }
+        
+        
+        .workspace {
+        	
+            flex: 1;
+            overflow: auto;
+            background-color: #f8f9fa;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-md);
+        }
+        
+        .visualization-area {
+            
+            justify-content: center;
+            
+            overflow: auto;
+            padding: var(--spacing-md);
+        }
+        
+        .device-frame {
+            width: 100%;
+            max-width: 500px;
+            height: 700px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            position: relative;
+            border: 12px solid #333;
+            margin: 0 auto;
+        }
+        
+        .device-screen {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: white;
+            position: relative;
+        }
+        
+        .dropzone {
+        	width: 100℅;
+            height: 100℅;
+            
+        }
+        
+        .dropzone.highlight {
+            border-color: var(--primary-color);
+            background-color: rgba(74, 108, 247, 0.05);
+        }
+        
+        
+        .properties-panel {
+            height: var(--properties-height);
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .properties-panel.visible {
+            display: block;
+        }
+        
+        .properties-panel h3 {
+            margin-bottom: var(--spacing-sm);
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid #eee;
+            color: var(--dark-color);
+            font-size: var(--font-size-md);
+        }
+        
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .property-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .property-group label {
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+        }
+        
+        .property-group input,
+        .property-group select,
+        .property-group textarea {
+            padding: var(--spacing-xs);
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-sm);
+        }
+        
+        .property-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid #eee;
+        }
+        
+       
+        .code-editor {
+            flex: 1;
+            padding: var(--spacing-md);
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .code-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        #html-code {
+            flex: 1;
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            background-color: #f8f9fa;
+            font-size: var(--font-size-md);
+        }
+        
+        
+        .preview-container {
+            flex: 1;
+            padding: 0;
+            background-color: white;
+            overflow: hidden;
+        }
+        
+        #preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+        }
+        
+        .btn i {
+            margin-right: var(--spacing-xs);
+            font-size: var(--font-size-xs);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: var(--success-hover);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: black;
+        }
+        
+        .btn-warning:hover {
+            background-color: var(--warning-hover);
+        }
+        
+
+        .component {
+            padding: var(--spacing-sm);
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            margin: var(--spacing-xs);
+            position: absolute;
+            min-height: 30px;
+            min-width: 50px;
+            box-sizing: border-box;
+        }
+        
+        .component.selected {
+            border: 1px solid var(--primary-color);
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .component-actions {
+            position: absolute;
+            top: -10px;
+            right: 0;
+            display: none;
+            background: white;
+            border-radius: 2px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+        
+        .component:hover .component-actions {
+            display: flex;
+        }
+        
+        .component-action-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            color: #555;
+        }
+        
+        .component-action-btn:hover {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+        
+        
+        .gravity-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+        }
+        
+        .gravity-btn {
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: white;
+            font-size: var(--font-size-xs);
+        }
+        
+        .gravity-btn.active {
+            border-color: var(--primary-color);
+            background-color: rgba(74, 108, 247, 0.1);
+        }
+        
+        .gravity-btn i {
+            margin: 0;
+        }
+        
+       
+        #main-dropzone {
+            
+            
+            
+            background-color: rgba(0, 0, 0, 0.02);
+       width: 100%;
+       height: 100%;
+
+ }
+        
+        #main-dropzone:not(:empty) {
+            background-color: transparent;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+        
+        #main-dropzone:not(:empty) p {
+            display: none;
+        }
+        
+     
+        #design-screen {
+            min-height: 90vh;
+            overflow: visible;
+        }
+        
+        
+        .visualization-area {
+            padding: 5px;
+        }
+        
+        .device-frame {
+            max-width: 100%;
+            height: 85vh;
+            border-width: 8px;
+        }
+        
+        .preview-container, .code-editor {
+            height: 85vh;
+        }
+        
+       
+        .icon::before {
+            content: "■";
+            margin-right: 5px;
+        }
+        
+        .fas {
+            display: inline-block;
+            font-style: normal;
+            font-variant: normal;
+            text-rendering: auto;
+            line-height: 1;
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+        }
+        
+        .fa-code::before { content: "\f121"; }
+        .fa-save::before { content: "\f0c7"; }
+        .fa-paint-brush::before { content: "\f1fc"; }
+        .fa-eye::before { content: "\f06e"; }
+        .fa-th-large::before { content: "\f009"; }
+        .fa-puzzle-piece::before { content: "\f12e"; }
+        .fa-sitemap::before { content: "\f0e8"; }
+        .fa-grip-lines::before { content: "\f531"; }
+        .fa-grip-lines-vertical::before { content: "\f532"; }
+        .fa-scroll::before { content: "\f70e"; }
+        .fa-font::before { content: "\f031"; }
+        .fa-edit::before { content: "\f044"; }
+        .fa-square::before { content: "\f0c8"; }
+        .fa-image::before { content: "\f03e"; }
+        .fa-check-square::before { content: "\f14a"; }
+        .fa-caret-down::before { content: "\f0d7"; }
+        .fa-list::before { content: "\f03a"; }
+        .fa-mobile-alt::before { content: "\f3cd"; }
+        .fa-trash::before { content: "\f1f8"; }
+        .fa-check::before { content: "\f00c"; }
+        .fa-sync::before { content: "\f021"; }
+        .fa-align-left::before { content: "\f036"; }
+        .fa-align-center::before { content: "\f037"; }
+        .fa-align-right::before { content: "\f038"; }
+        .fa-link::before { content: "\f0c1"; }
+        .fa-window-minimize::before { content: "\f2d1"; }
+        .fa-id-card::before { content: "\f2c2"; }
+        
+       
+        .component[data-type="footer"] {
+            position: static !important;
+            width: 100% !important;
+            margin-top: auto;
+        }
+        
+        .component[data-type="link"] {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        .component[data-type="card"] {
+            display: block;
+            position: relative;
+        }
+        
+       
+        .seekbar {
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        .property-group span {
+            font-size: 11px;
+            margin-left: 5px;
+            color: var(--secondary-color);
+        }
+        
+       
+        .components-tree {
+            padding: var(--spacing-sm);
+        }
+        
+        .tree-item {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            margin: 2px 0;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            display: flex;
+            align-items: center;
+        }
+        
+        .tree-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .tree-item i {
+            margin-right: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+        }
+        
+        .tree-item.active {
+            background-color: rgba(74, 108, 247, 0.1);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+       
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100px;
+            }
+            
+            .device-frame {
+                max-width: 100%;
+                height: 600px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <span>SiteBuilder</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="save-btn">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="design">
+                <i class="fas fa-paint-brush"></i> VIEW
+            </div>
+            <div class="tab" data-tab="code">
+                <i class="fas fa-code"></i> CODE
+            </div>
+            <div class="tab" data-tab="preview">
+                <i class="fas fa-eye"></i> PREVIEW
+            </div>
+        </div>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-th-large"></i> Layouts</h3>
+                    <div class="components-list">
+                        <div class="component-item" draggable="true" data-type="linear-h">
+                            <i class="fas fa-grip-lines"></i> Linear(H)
+                        </div>
+                        <div class="component-item" draggable="true" data-type="linear-v">
+                            <i class="fas fa-grip-lines-vertical"></i> Linear(V)
+                        </div>
+                        <div class="component-item" draggable="true" data-type="scroll-h">
+                            <i class="fas fa-scroll"></i> Scroll(H)
+                        </div>
+                        <div class="component-item" draggable="true" data-type="scroll-v">
+                            <i class="fas fa-scroll"></i> Scroll(V)
+                        </div>
+                        <div class="component-item" draggable="true" data-type="link">
+                            <i class="fas fa-link"></i> Link
+                                     </div>
+                        <div class="component-item" draggable="true" data-type="divider">
+                            <i class="fas fa-grip-lines"></i> Divider
+                        </div>
+                        <div class="component-item" draggable="true" data-type="card">
+                            <i class="fas fa-id-card"></i> Card
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-puzzle-piece"></i> Widgets</h3>
+                    <div class="components-list">
+                        <div class="component-item" draggable="true" data-type="textview">
+                            <i class="fas fa-font"></i> TextView
+                        </div>
+                        <div class="component-item" draggable="true" data-type="edittext">
+                            <i class="fas fa-edit"></i> EditText
+                        </div>
+                        <div class="component-item" draggable="true" data-type="button">
+                            <i class="fas fa-square"></i> Button
+                        
+                        <div class="component-item" draggable="true" data-type="checkbox">
+                            <i class="fas fa-check-square"></i> CheckBox
+                        </div>
+                        <div class="component-item" draggable="true" data-type="spinner">
+                            <i class="fas fa-caret-down"></i> Spinner
+                              </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="tab-content active" id="design-tab">
+                <div class="workspace">
+                    <div class="visualization-area">
+                        <div class="device-frame">
+                            <div class="device-screen" id="design-screen">
+                                <div class="dropzone" id="main-dropzone">
+                                    <p style="text-align:center;color:#999;padding:30px;">
+                                        Arraste componentes aqui
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="properties-panel" id="properties-panel">
+                    <h3>Properties</h3>
+                    <div class="property-group">
+                        <label for="comp-link">Link URL:</label>
+                        <input type="url" id="comp-link" placeholder="https://exemplo.com">
+                    </div>
+                    <div class="property-group">
+                        <label for="comp-padding">Padding:</label>
+                        <input type="range" id="comp-padding" min="0" max="50" value="0" class="seekbar">
+                        <span id="comp-padding-value">0px</span>
+                    </div>
+                    <div class="property-group">
+                        <label for="comp-margin-top">Margin Top:</label>
+                        <input type="range" id="comp-margin-top" min="0" max="50" value="0" class="seekbar">
+                        <span id="comp-margin-top-value">0px</span>
+                    </div>
+                    <div class="property-group">
+                        <label for="comp-margin-right">Margin Right:</label>
+                        <input type="range" id="comp-margin-right" min="0" max="50" value="0" class="seekbar">
+                        <span id="comp-margin-right-value">0px</span>
+                    </div>
+                    <div class="property-group">
+                        <label for="comp-margin-bottom">Margin Bottom:</label>
+                        <input type="range" id="comp-margin-bottom" min="0" max="50" value="0" class="seekbar">
+                        <span id="comp-margin-bottom-value">0px</span>
+                    </div>
+                    <div class="property-group">
+                        <label for="comp-margin-left">Margin Left:</label>
+                        <input type="range" id="comp-margin-left" min="0" max="50" value="0" class="seekbar">
+                        <span id="comp-margin-left-value">0px</span>
+                    </div>
+                    <div class="property-group">
+                        <label for="comp-fontsize">Font Size:</label>
+                        <input type="number" id="comp-fontsize" min="10" max="50" value="16">
+                        <span>px</span>
+                    </div>
+                    <div class="properties-grid">
+                        <div class="property-group">
+                            <label for="comp-id">ID:</label>
+                            <input type="text" id="comp-id" placeholder="component_id">
+                        </div>
+                        <div class="property-group">
+                            <label for="comp-text">Text:</label>
+                            <input type="text" id="comp-text" placeholder="Enter text">
+                        </div>
+                        <div class="property-group">
+                            <label for="comp-width">Width:</label>
+                            <input type="text" id="comp-width" placeholder="100px or 100%">
+                        </div>
+                        <div class="property-group">
+                            <label for="comp-height">Height:</label>
+                            <input type="text" id="comp-height" placeholder="100px">
+                        </div>
+                        <div class="property-group">
+                            <label for="comp-color">Text Color:</label>
+                            <input type="color" id="comp-color" value="#000000">
+                        </div>
+                        <div class="property-group">
+                            <label for="comp-bgcolor">Background:</label>
+                            <input type="color" id="comp-bgcolor" value="#ffffff">
+                        </div>
+                        <div class="property-group">
+                            <label>Gravity:</label>
+                            <div class="gravity-selector">
+                                <button class="gravity-btn" data-gravity="left"><i class="fas fa-align-left"></i></button>
+                                <button class="gravity-btn" data-gravity="center"><i class="fas fa-align-center"></i></button>
+                                <button class="gravity-btn" data-gravity="right"><i class="fas fa-align-right"></i></button>
+                                <button class="gravity-btn" data-gravity="top">Top</button>
+                                <button class="gravity-btn" data-gravity="middle">Middle</button>
+                                <button class="gravity-btn" data-gravity="bottom">Bottom</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="property-buttons">
+                        <button class="btn btn-danger" id="remove-comp-btn">
+                            <i class="fas fa-trash"></i> Remove
+                    </div>
+                </div>
+            </div>
+            <div class="tab-content" id="code-tab">
+                <div class="code-editor">
+                    <div class="code-toolbar">
+                        <button class="btn btn-success" id="update-code-btn">
+                            <i class="fas fa-sync"></i> Update Preview
+                        </button>
+                    </div>
+                    <textarea id="html-code" placeholder="HTML code will appear here..."></textarea>
+                </div>
+            </div>
+            <div class="tab-content" id="preview-tab">
+                <div class="preview-container">
+                    <iframe id="preview-iframe"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentComponent = null;
+    const components = [];
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const designScreen = document.getElementById('design-screen');
+    const propertiesPanel = document.getElementById('properties-panel');
+    const htmlCode = document.getElementById('html-code');
+    const previewIframe = document.getElementById('preview-iframe');
+    const removeCompBtn = document.getElementById('remove-comp-btn');
+    const applyPropsBtn = document.getElementById('apply-props-btn');
+    const updateCodeBtn = document.getElementById('update-code-btn');
+    const gravityButtons = document.querySelectorAll('.gravity-btn');
+    initDragAndDrop();
+    initSeekbars();
+    initRealTimeUpdates();
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+            if (tabId === 'code') {
+                updateCode();
+            } else if (tabId === 'preview') {
+                updatePreview();
+            }
+        });
+    });
+    removeCompBtn.addEventListener('click', removeCurrentComponent);
+    applyPropsBtn.addEventListener('click', applyProperties);
+    updateCodeBtn.addEventListener('click', updatePreviewFromCode);
+    gravityButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            gravityButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            if (currentComponent) {
+                const gravity = this.getAttribute('data-gravity');
+                currentComponent.properties.gravity = gravity;
+                applyGravity(gravity);
+                updateCode();
+            }
+        });
+    });
+    function initDragAndDrop() {
+        const componentItems = document.querySelectorAll('.component-item');
+        componentItems.forEach(item => {
+            item.addEventListener('dragstart', dragStart);
+            item.addEventListener('dragend', dragEnd);
+        });
+        designScreen.addEventListener('dragover', dragOver);
+        designScreen.addEventListener('dragenter', dragEnter);
+        designScreen.addEventListener('dragleave', dragLeave);
+        designScreen.addEventListener('drop', drop);
+    }
+    function dragStart(e) {
+        e.dataTransfer.setData('text/plain', this.getAttribute('data-type'));
+        this.classList.add('dragging');
+    }
+    function dragEnd() {
+        this.classList.remove('dragging');
+    }
+    function dragOver(e) {
+        e.preventDefault();
+    }
+    function dragEnter(e) {
+        e.preventDefault();
+        this.classList.add('highlight');
+    }
+    function dragLeave() {
+        this.classList.remove('highlight');
+    }
+    function drop(e) {
+        e.preventDefault();
+        this.classList.remove('highlight');
+        const componentType = e.dataTransfer.getData('text/plain');
+        const rect = designScreen.getBoundingClientRect();
+        let x = Math.round(e.clientX - rect.left);
+        let y = Math.round(e.clientY - rect.top);
+        const grid = 10;
+        x = Math.max(0, Math.round(x / grid) * grid);
+        y = Math.max(0, Math.round(y / grid) * grid);
+        const coords = resolveOverlap(x, y);
+        createComponent(componentType, coords.x, coords.y);
+    }
+    function resolveOverlap(x, y) {
+        const padding = 8;
+        let nx = x;
+        let ny = y;
+        const maxIter = 400;
+        let iter = 0;
+        while (iter < maxIter) {
+            let collision = false;
+            for (let i = 0; i < components.length; i++) {
+                const el = components[i].element;
+                const r = el.getBoundingClientRect();
+                const parentRect = designScreen.getBoundingClientRect();
+                const elLeft = Math.round(r.left - parentRect.left);
+                const elTop = Math.round(r.top - parentRect.top);
+                const elRight = elLeft + Math.round(r.width);
+                const elBottom = elTop + Math.round(r.height);
+                const w = Math.max(100, Math.round(r.width));
+                const h = Math.max(20, Math.round(r.height));
+                if (nx + padding < elRight && nx + w > elLeft && ny + padding < elBottom && ny + h > elTop) {
+                    collision = true;
+                    break;
+                }
+            }
+            if (!collision) break;
+            nx += padding;
+            ny += padding;
+            iter++;
+        }
+        return { x: nx, y: ny };
+    }
+    function createComponent(type, x, y) {
+        const id = `comp-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+        let componentEl;
+        switch(type) {
+            case 'textview':
+            case 'heading':
+                componentEl = document.createElement('h2');
+                componentEl.textContent = 'TextView';
+                break;
+            case 'edittext':
+            case 'input':
+                componentEl = document.createElement('input');
+                componentEl.type = 'text';
+                componentEl.placeholder = 'EditText';
+                break;
+            case 'button':
+                componentEl = document.createElement('button');
+                componentEl.textContent = 'Button';
+                componentEl.className = 'btn';
+                break;
+            case 'imageview':
+            case 'image':
+                componentEl = document.createElement('img');
+                componentEl.src = 'https://via.placeholder.com/150';
+                componentEl.alt = 'ImageView';
+                break;
+            case 'checkbox':
+                componentEl = document.createElement('div');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = id + '-cb';
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = 'CheckBox';
+                componentEl.appendChild(checkbox);
+                componentEl.appendChild(label);
+                break;
+            case 'spinner':
+                componentEl = document.createElement('select');
+                const option1 = document.createElement('option');
+                option1.textContent = 'Option 1';
+                const option2 = document.createElement('option');
+                option2.textContent = 'Option 2';
+                componentEl.appendChild(option1);
+                componentEl.appendChild(option2);
+                break;
+            case 'listview':
+                componentEl = document.createElement('div');
+                componentEl.innerHTML = '<p>ListView</p>';
+                componentEl.style.minHeight = '100px';
+                componentEl.style.backgroundColor = '#f0f0f0';
+                break;
+            case 'linear-h':
+                componentEl = document.createElement('div');
+                componentEl.innerHTML = '<p>LinearLayout Horizontal</p>';
+                componentEl.style.display = 'flex';
+                componentEl.style.flexDirection = 'row';
+                componentEl.style.minHeight = '100px';
+                componentEl.style.backgroundColor = '#f0f0f0';
+                break;
+            case 'linear-v':
+                componentEl = document.createElement('div');
+                componentEl.innerHTML = '<p>LinearLayout Vertical</p>';
+                componentEl.style.display = 'flex';
+                componentEl.style.flexDirection = 'column';
+                componentEl.style.minHeight = '100px';
+                componentEl.style.backgroundColor = '#f0f0f0';
+                break;
+            case 'link':
+                componentEl = document.createElement('a');
+                componentEl.textContent = 'Link';
+                componentEl.href = '#';
+                break;
+            case 'footer':
+                componentEl = document.createElement('footer');
+                componentEl.innerHTML = '<p>Footer Content</p>';
+                componentEl.style.backgroundColor = '#f0f0f0';
+                componentEl.style.padding = '-100px';
+                break;
+            default:
+                componentEl = document.createElement('div');
+                componentEl.textContent = 'New Component';
+        }
+        componentEl.setAttribute('id', id);
+        componentEl.classList.add('component');
+        componentEl.style.position = 'absolute';
+        componentEl.style.left = `${x}px`;
+        componentEl.style.top = `${y}px`;
+        componentEl.style.margin = '0';
+        const actions = document.createElement('div');
+        actions.className = 'component-actions';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'component-action-btn';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        actions.appendChild(editBtn);
+        componentEl.appendChild(actions);
+        componentEl.addEventListener('click', function(e) {
+            e.stopPropagation();
+            selectComponent(this);
+        });
+        designScreen.appendChild(componentEl);
+        const initialProps = {
+            text: (componentEl.textContent || '') + '',
+            width: '',
+            height: '',
+            color: '#000000',
+            bgColor: '',
+            gravity: '',
+            marginTop: 0,
+            marginRight: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            fontSize: 16
+        };
+        components.push({
+            id: id,
+            type: type,
+            element: componentEl,
+            properties: initialProps
+        });
+        selectComponent(componentEl);
+        updateCode();
+    }
+    function selectComponent(component) {
+        if (currentComponent) {
+            currentComponent.element.classList.remove('selected');
+        }
+        currentComponent = components.find(c => c.id === component.id);
+        if (currentComponent) {
+            component.classList.add('selected');
+            propertiesPanel.classList.add('visible');
+            document.getElementById('comp-id').value = component.id;
+            document.getElementById('comp-text').value = currentComponent.properties.text || '';
+            document.getElementById('comp-width').value = currentComponent.properties.width || '';
+            document.getElementById('comp-height').value = currentComponent.properties.height || '';
+            document.getElementById('comp-color').value = currentComponent.properties.color || '#000000';
+            document.getElementById('comp-bgcolor').value = currentComponent.properties.bgColor || '';
+            document.getElementById('comp-margin-top').value = parseInt(currentComponent.properties.marginTop || 0);
+            document.getElementById('comp-margin-top-value').textContent = `${currentComponent.properties.marginTop}px`;
+            document.getElementById('comp-margin-right').value = parseInt(currentComponent.properties.marginRight || 0);
+            document.getElementById('comp-margin-right-value').textContent = `${currentComponent.properties.marginRight}px`;
+            document.getElementById('comp-margin-bottom').value = parseInt(currentComponent.properties.marginBottom || 0);
+            document.getElementById('comp-margin-bottom-value').textContent = `${currentComponent.properties.marginBottom}px`;
+            document.getElementById('comp-margin-left').value = parseInt(currentComponent.properties.marginLeft || 0);
+            document.getElementById('comp-margin-left-value').textContent = `${currentComponent.properties.marginLeft}px`;
+            document.getElementById('comp-fontsize').value = parseInt(currentComponent.properties.fontSize || 16);
+            document.getElementById('comp-fontsize-value').textContent = `${currentComponent.properties.fontSize}px`;
+            gravityButtons.forEach(btn => btn.classList.remove('active'));
+            if (currentComponent.properties.gravity) {
+                const gravityBtn = document.querySelector(`.gravity-btn[data-gravity="${currentComponent.properties.gravity}"]`);
+                if (gravityBtn) gravityBtn.classList.add('active');
+            }
+        }
+    }
+    function applyProperties() {
+        if (!currentComponent) return;
+        const id = document.getElementById('comp-id').value;
+        const text = document.getElementById('comp-text').value;
+        const width = document.getElementById('comp-width').value;
+        const height = document.getElementById('comp-height').value;
+        const color = document.getElementById('comp-color').value;
+        const bgColor = document.getElementById('comp-bgcolor').value;
+        currentComponent.element.id = id;
+        currentComponent.id = id;
+        if (['textview', 'heading', 'button', 'link'].includes(currentComponent.type)) {
+            currentComponent.element.textContent = text;
+            currentComponent.properties.text = text;
+        } else if (currentComponent.type === 'edittext' || currentComponent.type === 'input') {
+            currentComponent.element.placeholder = text;
+            currentComponent.properties.text = text;
+        } else if (currentComponent.type === 'checkbox') {
+            const label = currentComponent.element.querySelector('label');
+            if (label) {
+                label.textContent = text;
+                currentComponent.properties.text = text;
+            }
+        }
+        if (width !== '') {
+            currentComponent.element.style.width = width;
+            currentComponent.properties.width = width;
+        } else {
+            currentComponent.element.style.width = '';
+            currentComponent.properties.width = '';
+        }
+        if (height !== '') {
+            currentComponent.element.style.height = height;
+            currentComponent.properties.height = height;
+        } else {
+            currentComponent.element.style.height = '';
+            currentComponent.properties.height = '';
+        }
+        if (color) {
+            currentComponent.element.style.color = color;
+            currentComponent.properties.color = color;
+        }
+        if (bgColor) {
+            currentComponent.element.style.backgroundColor = bgColor;
+            currentComponent.properties.bgColor = bgColor;
+        }
+        currentComponent.element.style.marginTop = `${currentComponent.properties.marginTop}px`;
+        currentComponent.element.style.marginRight = `${currentComponent.properties.marginRight}px`;
+        currentComponent.element.style.marginBottom = `${currentComponent.properties.marginBottom}px`;
+        currentComponent.element.style.marginLeft = `${currentComponent.properties.marginLeft}px`;
+        if (currentComponent.properties.fontSize) {
+            currentComponent.element.style.fontSize = `${currentComponent.properties.fontSize}px`;
+        }
+        updateCode();
+    }
+    function applyGravity(gravity) {
+        if (!currentComponent) return;
+        currentComponent.element.style.display = '';
+        currentComponent.element.style.flexDirection = '';
+        currentComponent.element.style.justifyContent = '';
+        currentComponent.element.style.alignItems = '';
+        currentComponent.element.style.textAlign = '';
+        switch(gravity) {
+            case 'left':
+                currentComponent.element.style.textAlign = 'left';
+                break;
+            case 'center':
+                currentComponent.element.style.textAlign = 'center';
+                break;
+            case 'right':
+                currentComponent.element.style.textAlign = 'right';
+                break;
+            case 'top':
+                currentComponent.element.style.display = 'flex';
+                currentComponent.element.style.flexDirection = 'column';
+                currentComponent.element.style.justifyContent = 'flex-start';
+                break;
+            case 'middle':
+                currentComponent.element.style.display = 'flex';
+                currentComponent.element.style.flexDirection = 'column';
+                currentComponent.element.style.justifyContent = 'center';
+                break;
+            case 'bottom':
+                currentComponent.element.style.display = 'flex';
+                currentComponent.element.style.flexDirection = 'column';
+                currentComponent.element.style.justifyContent = 'flex-end';
+                break;
+        }
+    }
+    function removeCurrentComponent() {
+        if (!currentComponent) return;
+        const index = components.findIndex(c => c.id === currentComponent.id);
+        if (index !== -1) {
+            components[index].element.remove();
+            components.splice(index, 1);
+            currentComponent = null;
+            propertiesPanel.classList.remove('visible');
+            updateCode();
+        }
+    }
+    function updateCode() {
+        htmlCode.value = generateHTMLContent();
+    }
+    function updatePreviewFromCode() {
+        updatePreview();
+    }
+    function updatePreview() {
+        const htmlContent = htmlCode.value || generateHTMLContent();
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        previewIframe.src = url;
+    }
+    function generateHTMLContent() {
+        let html = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Gerado</title>
+<style>
+body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:15px;background-color:#f8f9fa;color:#333}
+.container{max-width:1200px;margin:0 auto;position:relative;min-height:100vh}
+.btn{display:inline-block;padding:10px 15px;background-color:#4a6cf7;color:#fff;text-decoration:none;border-radius:4px;border:none;cursor:pointer}
+.btn:hover{background-color:#3a5cd8}
+img{max-width:100%;height:auto}
+.component{position:absolute}
+</style></head>
+<body>
+<div class="container">
+`;
+        components.forEach(comp => {
+            const element = comp.element;
+            let tagName = element.tagName.toLowerCase();
+            if (comp.type === 'checkbox') {
+                const input = element.querySelector('input');
+                const label = element.querySelector('label');
+                const style = element.getAttribute('style') || '';
+                const inputStyle = input.getAttribute('style') || '';
+                const labelStyle = label.getAttribute('style') || '';
+                html += `<div id="${element.id}" style="${escapeHtml(style)}">`;
+                html += `<input type="checkbox" id="${escapeHtml(input.id)}" style="${escapeHtml(inputStyle)}" />`;
+                html += `<label for="${escapeHtml(input.id)}" style="${escapeHtml(labelStyle)}">${escapeHtml(label.textContent)}</label>`;
+                html += `</div>\n`;
+                return;
+            }
+            let style = element.getAttribute('style') || '';
+            if (tagName === 'input') {
+                html += `<input id="${escapeHtml(element.id)}" placeholder="${escapeHtml(element.placeholder||'')}" style="${escapeHtml(style)}" />\n`;
+                return;
+            }
+            if (tagName === 'img') {
+                html += `<img id="${escapeHtml(element.id)}" src="${escapeHtml(element.src||'')}" alt="${escapeHtml(element.alt||'')}" style="${escapeHtml(style)}" />\n`;
+                return;
+            }
+            const tempElement = element.cloneNode(true);
+            const actions = tempElement.querySelector('.component-actions');
+            if (actions) actions.remove();
+            html += `<${tagName} id="${escapeHtml(element.id)}" style="${escapeHtml(style)}">${escapeHtml(tempElement.innerHTML)}</${tagName}>\n`;
+        });
+        html += `</div>
+</body>
+</html>`;
+        return html;
+    }
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.component') && !e.target.closest('.properties-panel')) {
+            if (currentComponent) {
+                currentComponent.element.classList.remove('selected');
+                currentComponent = null;
+                propertiesPanel.classList.remove('visible');
+            }
+        }
+    });
+    function initSeekbars() {
+        const marginProperties = ['top', 'right', 'bottom', 'left'];
+        marginProperties.forEach(position => {
+            const seekbar = document.getElementById(`comp-margin-${position}`);
+            const valueDisplay = document.getElementById(`comp-margin-${position}-value`);
+            if (seekbar) {
+                seekbar.addEventListener('input', function() {
+                    if (valueDisplay) valueDisplay.textContent = `${this.value}px`;
+                    if (currentComponent) {
+                        const prop = `margin${position.charAt(0).toUpperCase()+position.slice(1)}`;
+                        currentComponent.properties[prop] = parseInt(this.value,10) || 0;
+                        currentComponent.element.style[`margin${position.charAt(0).toUpperCase()+position.slice(1)}`] = `${currentComponent.properties[prop]}px`;
+                        updateCode();
+                    }
+                });
+            }
+        });
+        const fontSizeInput = document.getElementById('comp-fontsize');
+        const fontSizeValue = document.getElementById('comp-fontsize-value');
+        if (fontSizeInput) {
+            fontSizeInput.addEventListener('input', function() {
+                if (fontSizeValue) fontSizeValue.textContent = `${this.value}px`;
+                if (currentComponent) {
+                    currentComponent.properties.fontSize = parseInt(this.value,10) || 16;
+                    currentComponent.element.style.fontSize = `${currentComponent.properties.fontSize}px`;
+                    updateCode();
+                }
+            });
+        }
+    }
+    function initRealTimeUpdates() {
+        const compText = document.getElementById('comp-text');
+        if (compText) {
+            compText.addEventListener('input', function() {
+                if (currentComponent) {
+                    if (['textview', 'heading', 'button', 'link'].includes(currentComponent.type)) {
+                        currentComponent.element.textContent = this.value;
+                        currentComponent.properties.text = this.value;
+                    } else if (currentComponent.type === 'edittext' || currentComponent.type === 'input') {
+                        currentComponent.element.placeholder = this.value;
+                        currentComponent.properties.text = this.value;
+                    } else if (currentComponent.type === 'checkbox') {
+                        const label = currentComponent.element.querySelector('label');
+                        if (label) {
+                            label.textContent = this.value;
+                            currentComponent.properties.text = this.value;
+                        }
+                    }
+                    updateCode();
+                }
+            });
+        }
+        const compWidth = document.getElementById('comp-width');
+        if (compWidth) {
+            compWidth.addEventListener('input', function() {
+                if (currentComponent) {
+                    currentComponent.element.style.width = this.value || '';
+                    currentComponent.properties.width = this.value || '';
+                    updateCode();
+                }
+            });
+        }
+        const compHeight = document.getElementById('comp-height');
+        if (compHeight) {
+            compHeight.addEventListener('input', function() {
+                if (currentComponent) {
+                    currentComponent.element.style.height = this.value || '';
+                    currentComponent.properties.height = this.value || '';
+                    updateCode();
+                }
+            });
+        }
+        const compColor = document.getElementById('comp-color');
+        if (compColor) {
+            compColor.addEventListener('input', function() {
+                if (currentComponent) {
+                    currentComponent.element.style.color = this.value;
+                    currentComponent.properties.color = this.value;
+                    updateCode();
+                }
+            });
+        }
+        const compBg = document.getElementById('comp-bgcolor');
+        if (compBg) {
+            compBg.addEventListener('input', function() {
+                if (currentComponent) {
+                    currentComponent.element.style.backgroundColor = this.value;
+                    currentComponent.properties.bgColor = this.value;
+                    updateCode();
+                }
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>

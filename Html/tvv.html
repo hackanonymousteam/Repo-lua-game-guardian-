@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Premium</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: white;
+            height: 100vh;
+        }
+
+        #tv-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #000000 0%, #0a0a0a 100%);
+        }
+
+        #tv-frame {
+            position: relative;
+            width: 95%;
+            height: 90%;
+            max-width: 1800px;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 20px;
+            box-shadow: 
+                0 0 80px rgba(0, 100, 255, 0.3),
+                0 0 150px rgba(0, 80, 255, 0.2),
+                inset 0 0 50px rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 2px solid #333;
+        }
+
+        #screen-container {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #video-player {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(to bottom, 
+                transparent 0%, 
+                transparent 90%, 
+                rgba(0, 0, 0, 0.4) 100%);
+        }
+
+        #current-time {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 28px;
+            font-weight: 300;
+            z-index: 1001;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px 50px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #loading::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto 0;
+            border: 3px solid transparent;
+            border-top: 3px solid #0066ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        #unmute-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #0066ff, #0044cc);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 102, 255, 0.4);
+        }
+
+        #unmute-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.6);
+            background: linear-gradient(135deg, #0088ff, #0066ff);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .glow-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 100, 255, 0.1) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+      
+        @media (max-width: 768px) {
+            #tv-frame {
+                width: 98%;
+                height: 95%;
+                border-radius: 10px;
+            }
+            
+            #current-time {
+                font-size: 14px;
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="tv-container">
+        <div class="glow-effect"></div>
+        <div id="tv-frame">
+            <div id="screen-container">
+                <video id="video-player" playsinline muted autoplay></video>
+                <div id="overlay"></div>
+                
+                <div id="loading"></div>
+                <div id="current-time"></div>
+                <button id="unmute-btn" style="display: none;">🔊 Ativar Som</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoUrls = [
+            'https://ia800502.us.archive.org/15/items/youtube-pkNsq1TvIDc/pkNsq1TvIDc.mp4',
+            
+            'https://ia800502.us.archive.org/15/items/youtube-pkNsq1TvIDc/pkNsq1TvIDc.mp4',
+            
+            'https://ia800502.us.archive.org/15/items/youtube-pkNsq1TvIDc/pkNsq1TvIDc.mp4'
+        ];
+
+        const videoSchedule = [
+            { day: 1, time: "00:00:00", duration: 3600, videoIndex: 0, title: "" },
+            
+            { day: 1, time: "02:00:00", duration: 7200, videoIndex: 1, title: "" },
+            
+            { day: 1, time: "06:00:00", duration: 3600, videoIndex: 2, title: "" },
+            
+            { day: 1, time: "08:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 1, time: "10:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 1, time: "12:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 1, time: "14:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 1, time: "16:00:00", duration: 7200, videoIndex: 7, title: "" },
+            
+            
+            { day: 1, time: "18:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 1, time: "20:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 1, time: "22:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 1, time: "24:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            
+            
+            { day: 2, time: "00:00:00", duration: 3600, videoIndex: 0, title: "" },
+            
+            { day: 2, time: "02:00:00", duration: 7200, videoIndex: 1, title: "" },
+            
+            { day: 2, time: "06:00:00", duration: 3600, videoIndex: 2, title: "" },
+            
+            { day: 2, time: "08:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 2, time: "10:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 2, time: "12:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 2, time: "14:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 2, time: "16:00:00", duration: 7200, videoIndex: 7, title: "" },
+            
+            
+            { day: 2, time: "18:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 2, time: "20:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 2, time: "22:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 2, time: "24:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 3, time: "00:00:00", duration: 3600, videoIndex: 0, title: "" },
+            
+            { day: 3, time: "02:00:00", duration: 7200, videoIndex: 1, title: "" },
+            
+            { day: 3, time: "06:00:00", duration: 3600, videoIndex: 2, title: "" },
+            
+            { day: 3, time: "08:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 3, time: "10:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 3, time: "12:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 3, time: "14:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 3, time: "16:00:00", duration: 7200, videoIndex: 7, title: "" },
+            
+            
+            { day: 3, time: "18:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 3, time: "20:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 3, time: "22:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 3, time: "24:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 4, time: "00:00:00", duration: 3600, videoIndex: 0, title: "" },
+            
+            { day: 4, time: "02:00:00", duration: 7200, videoIndex: 1, title: "" },
+            
+            { day: 4, time: "06:00:00", duration: 3600, videoIndex: 2, title: "" },
+            
+            { day: 4, time: "08:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 4, time: "10:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 4, time: "12:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 4, time: "14:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 4, time: "16:00:00", duration: 7200, videoIndex: 7, title: "" },
+            
+            
+            { day: 4, time: "18:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 4, time: "20:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 4, time: "22:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 4, time: "24:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 5, time: "00:00:00", duration: 3600, videoIndex: 0, title: "" },
+            
+            { day: 5, time: "02:00:00", duration: 7200, videoIndex: 1, title: "" },
+            
+            { day: 5, time: "06:00:00", duration: 3600, videoIndex: 2, title: "" },
+            
+            { day: 5, time: "08:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 5, time: "10:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 5, time: "12:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 5, time: "14:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 5, time: "16:00:00", duration: 7200, videoIndex: 7, title: "" },
+            
+            
+            { day: 5, time: "18:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 5, time: "20:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 5, time: "22:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 5, time: "24:00:00", duration: 3600, videoIndex: 6, title: "" },
+            { day: 0, time: "00:00:00", duration: 3600, videoIndex: 0, title: "" },
+            
+            { day: 0, time: "02:00:00", duration: 7200, videoIndex: 1, title: "" },
+            
+            { day: 0, time: "06:00:00", duration: 3600, videoIndex: 2, title: "" },
+            
+            { day: 0, time: "08:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 0, time: "10:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 0, time: "12:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 0, time: "14:00:00", duration: 3600, videoIndex: 6, title: "" },
+            
+            { day: 0, time: "16:00:00", duration: 7200, videoIndex: 7, title: "" },
+            
+            
+            { day: 0, time: "18:00:00", duration: 7200, videoIndex: 3, title: "" },
+            
+            { day: 0, time: "20:00:00", duration: 3600, videoIndex: 4, title: "" },
+            
+            { day: 0, time: "22:00:00", duration: 7200, videoIndex: 5, title: "" },
+            
+            { day: 0, time: "24:00:00", duration: 3600, videoIndex: 6, title: "" }
+
+
+
+
+
+        ];
+
+        let currentVideo = null;
+        let isUserInteracted = false;
+
+        function getDayName(dayNumber) {
+            const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return days[dayNumber];
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const dayName = getDayName(now.getDay());
+            const timeString = now.toLocaleTimeString('pt-BR');
+            const dateString = now.toLocaleDateString('pt-BR');
+            document.getElementById('current-time').innerHTML = 
+                `📅 ${dayName}<br>🕒 ${timeString}<br>${dateString}`;
+        }
+
+        function loadVideo(videoIndex, startTime) {
+            const videoPlayer = document.getElementById('video-player');
+            const loading = document.getElementById('loading');
+            const unmuteBtn = document.getElementById('unmute-btn');
+            
+            if (currentVideo === videoIndex) {
+                videoPlayer.currentTime = startTime;
+                return;
+            }
+
+            videoPlayer.src = videoUrls[videoIndex];
+            videoPlayer.currentTime = startTime;
+            videoPlayer.muted = true;
+            videoPlayer.playsInline = true;
+            videoPlayer.playbackRate = 1.0;
+
+            videoPlayer.onloadeddata = function() {
+                videoPlayer.play().then(() => {
+                    loading.style.display = 'none';
+                    
+                    if (!isUserInteracted) {
+                        unmuteBtn.style.display = 'block';
+                    }
+                    
+                    currentVideo = videoIndex;
+                }).catch(error => {
+                    loading.textContent = '▶️ Click for start';
+                });
+            };
+ 
+            videoPlayer.onerror = function() {
+                loading.textContent = '❌ Error;
+            };
+        }
+
+        function getCurrentProgram() {
+            const now = new Date();
+            const currentDay = now.getDay();
+            const currentTimeInSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+            for (let i = 0; i < videoSchedule.length; i++) {
+                const program = videoSchedule[i];
+                
+                if (program.day === currentDay || program.day === -1) {
+                    const scheduledTime = program.time.split(':');
+                    const scheduledTimeInSeconds = parseInt(scheduledTime[0]) * 3600 + 
+                                                 parseInt(scheduledTime[1]) * 60 + 
+                                                 parseInt(scheduledTime[2] || 0);
+                    
+                    if (currentTimeInSeconds >= scheduledTimeInSeconds && 
+                        currentTimeInSeconds < scheduledTimeInSeconds + program.duration) {
+                        return {
+                            program: program,
+                            startTime: currentTimeInSeconds - scheduledTimeInSeconds
+                        };
+                    }
+                }
+            }
+            
+            const defaultProgram = videoSchedule.find(p => p.day === -1);
+            return {
+                program: defaultProgram,
+                startTime: 0
+            };
+        }
+
+        function checkSchedule() {
+            const currentProgram = getCurrentProgram();
+            loadVideo(
+                currentProgram.program.videoIndex, 
+                currentProgram.startTime
+            );
+        }
+
+        function initializeTV() {
+            const videoPlayer = document.getElementById('video-player');
+            const loading = document.getElementById('loading');
+            const unmuteBtn = document.getElementById('unmute-btn');
+
+            videoPlayer.preload = "auto";
+            
+            function handleUserInteraction() {
+                if (!isUserInteracted) {
+                    isUserInteracted = true;
+                    videoPlayer.muted = false;
+                    unmuteBtn.style.display = 'none';
+                    videoPlayer.play().catch(console.log);
+                }
+            }
+
+            unmuteBtn.addEventListener('click', handleUserInteraction);
+            
+            document.body.addEventListener('click', function() {
+                handleUserInteraction();
+                if (videoPlayer.paused) {
+                    videoPlayer.play().then(() => {
+                        loading.style.display = 'none';
+                    });
+                }
+            });
+
+            document.addEventListener('keydown', handleUserInteraction);
+
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+
+            checkSchedule();
+            setInterval(checkSchedule, 5000);
+
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 3000);
+        }
+        window.addEventListener('load', initializeTV);
+    </script>
+</body>
+</html>
