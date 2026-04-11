@@ -2,8 +2,7 @@
 
 ## 📱 
 
-- ✔️ files channel telegram @batmangamesSS
-- ✔️ open source
+- ✔️ - ✔️ open source
 
 ## 🛠️ 
 
