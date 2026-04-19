@@ -1,0 +1,46 @@
+*** tutorial: how to change gameguardian 101.1 to execute  script no have error daemon
+
+no required space virtual ***
+
+
+change method y()Z
+
+in class Landroid/ext/ex
+
+to:
+
+.method public y()Z
+    .registers 1
+
+    const/4 v0, 0x1
+    return v0
+.end method
+
+
+
+
+
+gameguardian old versions  94.0 etc
+ go to 
+Landroid/ext/DaemonManager;
+
+
+change method  isDaemonRun()Z
+
+to: 
+
+.method public isDaemonRun()Z
+    .registers 1
+
+    const/4 p0, 0x1
+
+    return p0
+.end method
+
+
+
+
+
+done 
+
+
