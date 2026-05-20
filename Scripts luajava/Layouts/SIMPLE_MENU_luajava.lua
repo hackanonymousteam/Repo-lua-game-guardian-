@@ -12,7 +12,7 @@ local function bind(c)
     if ok then return r end
     return nil
 end
-
+local shouldExit = false
 local LinearLayout = bind("android.widget.LinearLayout")
 local Button = bind("android.widget.Button")
 local TextView = bind("android.widget.TextView")
@@ -70,7 +70,7 @@ btn1.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener",
             onClick = function()
                 pcall(function()
 gg.toast("god mode on")
-
+_unli = true
 
 
                 end)
@@ -150,11 +150,13 @@ gg.toast(" speed on")
             onClick = function()
                 pcall(function()
                     wm.removeView(layout)
+                    
+local shouldExit = true
                 end)
             end
         }))
 
-        local ok, err = pcall(function()
+local ok, err = pcall(function()
             wm.addView(layout, params)
         end)
 
@@ -165,6 +167,69 @@ gg.toast(" speed on")
         end
 
     end
-}))
+    }))
+isMenuVisible = false
+    while true do
+  if isMenuVisible then break end
+   if gg.isVisible(true) then
+    XGCK1 = 1
+    gg.setVisible(false)
+    gg.clearResults()
+  end
+  
+    if _unli then
+    _unli = false
+    gg.setRanges(gg.REGION_CODE_APP)
+    gg.searchNumber("-0.50344371796;9.99999997e-7;-0.50291442871::9", gg.TYPE_FLOAT)
+    gg.refineNumber("9.99999997e-7", gg.TYPE_FLOAT)
+    gg.getResults(100)
+    gg.editAll("-1", gg.TYPE_FLOAT)
+    gg.clearResults()
+    gg.toast("HACK ON")
+  end
+  
+if _dama then
+    _dama = false
+    gg.setRanges(gg.REGION_CODE_APP)
+    gg.searchNumber(va, gg.TYPE_FLOAT)
+    gg.refineNumber("9.99999997e-7", gg.TYPE_FLOAT)
+    gg.getResults(100)
+    gg.editAll("-1", gg.TYPE_FLOAT)
+    gg.clearResults()
+    gg.toast("HACK on")
+  end
+  
+  if _aimbotPending then
+    _aimbotPending = false
+    gg.setRanges(gg.REGION_CODE_APP)
+    gg.searchNumber("-0.50344371796;9.99999997e-7;-0.50291442871::9", gg.TYPE_FLOAT)
+    gg.refineNumber("9.99999997e-7", gg.TYPE_FLOAT)
+    gg.getResults(100)
+    gg.editAll("-1", gg.TYPE_FLOAT)
+    gg.clearResults()
+    gg.toast("HACK ON")
+  end
+ 
+  if _wall then
+    _wall = false
+    gg.setRanges(gg.REGION_CODE_APP)
+    gg.searchNumber("-0.50344371796;9.99999997e-7;-0.50291442871::9", gg.TYPE_FLOAT)
+    gg.refineNumber("9.99999997e-7", gg.TYPE_FLOAT)
+    gg.getResults(100)
+    gg.editAll("-1", gg.TYPE_FLOAT)
+    gg.clearResults()
+    gg.toast("HACK on")
+  end
+  
+if XGCK1 == 0 then    
+os.exit()
+  end  
+  if XGCK1 == 1 then    
+os.exit()
+  end  
+  XGCK1 = -1
+end
+  
+
 
 
